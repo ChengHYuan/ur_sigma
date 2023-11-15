@@ -1,0 +1,17 @@
+<launch>
+    <include file="$(find sigma)/launch/sigma.launch" />
+
+    <!-- <node pkg="sigma_iiwa_control"
+    type="iiwa_sigma_pose2.py"
+    name="iiwa_control"
+    output="screen"/> -->
+
+    <node pkg="sigma_to_sim"
+    type="sim_end_pub"
+    name="Sim_vrep"
+    output="screen"
+    />
+    <!-- <node pkg="epos4_control" type="epos_4_control" name="maxon_4_control" output="screen">
+    <rosparam file="$(find epos4_control)/config/motorconfig.yaml" command="load" />
+    </node> -->
+</launch>

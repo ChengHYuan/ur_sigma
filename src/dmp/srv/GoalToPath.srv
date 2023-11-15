@@ -1,0 +1,6 @@
+float64[] Start
+
+int32 GoalIndex
+---
+
+nav_msgs/Path Path

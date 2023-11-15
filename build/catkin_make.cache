@@ -1,0 +1,2 @@
+dmp:epos4_control:epos_driver:epos_msgs:maxon_epos_ros:sigma7:sigma_iiwa_control:sigma_to_sim
+-DCATKIN_DEVEL_PREFIX=/home/chy/sigma_iiwa_simulation/ur_sigma/devel -DCMAKE_INSTALL_PREFIX=/home/chy/sigma_iiwa_simulation/ur_sigma/install -G Unix Makefiles

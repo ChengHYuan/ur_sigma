@@ -1,0 +1,8 @@
+prefix=/home/chy/sigma_iiwa_simulation/ur_sigma/install
+
+Name: sigma_to_sim
+Description: Description of sigma_to_sim
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: roscpp rospy std_msgs message_runtime iiwa_msgs kdl_parser actionlib actionlib_msgs sensor_msgs

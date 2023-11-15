@@ -1,0 +1,38 @@
+<launch>
+    <include file="$(find sigma)/launch/sigma.launch" />
+
+    <!-- <node pkg="sigma_iiwa_control"
+    type="iiwa_sigma_pose2.py"
+    name="iiwa_control"
+    output="screen"/> -->
+    
+    <node pkg="sigma_to_sim"
+    type="robot_joint_to_end"
+    name="robot_thans_to_end"
+    output="screen"/>
+
+    <!-- <node pkg="sigma_iiwa_control"
+    type="read_button_2.py"
+    name="keyboard"
+    output="screen"/> -->
+
+    <!-- <node pkg="image_operate"
+    type="image_get"
+    name="image_get"
+    output="screen"/> -->
+
+    <!-- <node pkg="sigma_to_sim"
+    type="joint_velocity_client"
+    name="set_joint_velocity_limit"
+    output="screen"/> -->
+
+
+    <!-- <node pkg="sigma_to_sim"
+    type="robot_locked_control"
+    name="robot_locked_controler"
+    output="screen"
+    /> -->
+    <!-- <node pkg="epos4_control" type="epos_4_control" name="maxon_4_control" output="screen">
+    <rosparam file="$(find epos4_control)/config/motorconfig.yaml" command="load" />
+    </node> -->
+</launch>

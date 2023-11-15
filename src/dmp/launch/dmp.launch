@@ -1,0 +1,9 @@
+<launch>
+    <arg name="use_gmm" default="false"/>
+
+    <node name="dmp" pkg="dmp" type="dmp_server" respawn="false" output="screen"/>
+    <group if="$(arg use_gmm)">
+        <node name="gmm_test" pkg="gmm" type="gmm_test" respawn="false" output="screen"/>
+    </group>
+
+</launch>

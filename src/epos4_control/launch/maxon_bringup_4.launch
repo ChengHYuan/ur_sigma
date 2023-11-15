@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="epos4_control" type="epos_4_control" name="maxon_4_control" output="screen">
+    <rosparam file="$(find epos4_control)/config/motorconfig.yaml" command="load" />
+  </node>
+</launch>

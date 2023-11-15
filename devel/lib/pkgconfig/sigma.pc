@@ -1,0 +1,8 @@
+prefix=/home/chy/sigma_iiwa_simulation/ur_sigma/devel
+
+Name: sigma
+Description: Description of sigma
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
