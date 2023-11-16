@@ -19,6 +19,7 @@
         "string": "cpp",
         "vector": "cpp",
         "ostream": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "regex": "cpp"
     }
 }

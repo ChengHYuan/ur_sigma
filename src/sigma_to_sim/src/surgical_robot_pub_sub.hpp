@@ -25,12 +25,15 @@ public:
     ros::NodeHandle m_h;
     ros::Subscriber m_sub_frame;
     ros::Subscriber m_sub_joints;
+    ros::Subscriber m_sub_joints_real;
     ros::Subscriber m_sub_endo;
     ros::Subscriber m_sub_gripper;
     ros::Subscriber m_sub_of_v_real;
 
     ros::Publisher m_pub_of_endo;
     ros::Publisher m_pub_of_joints;
+    ros::Publisher m_pub_of_joints_real;
+
     ros::Publisher m_pub_of_joints_vel;
     ros::Publisher m_pub_of_endo_vel;
     ros::Publisher m_pub_of_v;
@@ -55,10 +58,12 @@ public:
 
     KDL::Frame command_frame;
     KDL::JntArray joints_now;
+    KDL::JntArray joints_now_real;
+    
     vector<KDL::JntArray> joints_save;
     KDL::JntArray joints_velocity;
 
-    bool is_fri_get;
+    bool is_real_get;
     bool is_vrep_get;
     
     vector<double> gap_fri;
@@ -90,7 +95,7 @@ public:
         time;
         joints_pubed;
 
-        is_fri_get = true;
+        is_real_get = false;
         is_vrep_get = false;
 
         hz = 200;
@@ -101,6 +106,7 @@ public:
         m_jv.position.resize(total_N);
         
         joints_now.resize(total_N);
+        joints_now_real.resize(total_N);
         joints_before.resize(total_N);
         joints_delta.resize(total_N);
         joints_save.resize(base_N);
@@ -124,13 +130,15 @@ public:
     };
     void sub_pub_init() {
         m_sub_frame = m_h.subscribe("/iiwa/command/CartesianPose_origin", 1, &RobotSubPub::call_back_frame, this);//获取目标位姿
-        m_sub_joints = m_h.subscribe("/left_UR10e/state/JointPosition", 1, &RobotSubPub::call_back_joints, this);//获取当前机器人角度
+        m_sub_joints = m_h.subscribe("/left_UR10e/state/JointPosition", 1, &RobotSubPub::call_back_joints, this);//获取仿真机器人角度
+        m_sub_joints_real = m_h.subscribe("/ur10e/state/JointState", 1, &RobotSubPub::call_back_joints_real, this);//获取真实机器人角度
         m_sub_endo = m_h.subscribe("/endoWrist/state/JointPosition", 1, &RobotSubPub::call_back_endo, this);//获取当前手术器械角度
         m_sub_gripper = m_h.subscribe("/sigma7/sigma0/gripper_angle", 1, &RobotSubPub::call_back_gripper, this);//获取夹爪角度
         m_sub_of_v_real = m_h.subscribe("/iiwa/state/JointVelocity", 1, &RobotSubPub::call_back_velocity, this);//获取当前iiwa机器人角度
 
         m_pub_of_endo = m_h.advertise<std_msgs::Float32MultiArray>("/endoWrist/command/JointPosition", 1);//发送手术器械电机角度
         m_pub_of_joints = m_h.advertise<sensor_msgs::JointState>("/left_UR10e/command/JointPosition", 1);//发送iiwa机器人各个关节角度
+        m_pub_of_joints_real = m_h.advertise<sensor_msgs::JointState>("/ur10e/command/JointPosition", 1);//发送iiwa机器人各个关节角度
         m_pub_of_v = m_h.advertise<sensor_msgs::JointState>("/left_UR10e/test/Velocity", 1);//发送计算出来的关节角速度
         m_pub_of_v_real = m_h.advertise<sensor_msgs::JointState>("/left_UR10e/state/JointVelocity_2", 1);//发送iiwa实际速度，带时间戳
 
@@ -151,7 +159,8 @@ public:
     void get_joints_velocity(KDL::JntArray& msg1);//从相邻的关节角获取角速度
 
     void call_back_frame(const geometry_msgs::PoseStamped& msg);
-    void call_back_joints(const sensor_msgs::JointState &msg);
+    void call_back_joints(const sensor_msgs::JointState& msg);
+    void call_back_joints_real(const sensor_msgs::JointState &msg);
     void call_back_endo(const std_msgs::Float32MultiArray& msg);
     void call_back_gripper(const std_msgs::Float32& msg);
     void call_back_velocity(const sensor_msgs::JointState & msg);
@@ -195,11 +204,26 @@ void RobotSubPub::call_back_joints(const sensor_msgs::JointState& msg) {
     // cout << "j6: " << joints_now.data[5] << endl;
 }
 
+void RobotSubPub::call_back_joints_real(const sensor_msgs::JointState &msg){
+    is_real_get = true;
+    time = msg.header.stamp;
+    joints_now_real.data[0] = msg.position[0];
+    joints_now_real.data[1] = msg.position[1];
+    joints_now_real.data[2] = msg.position[2];
+    joints_now_real.data[3] = msg.position[3];
+    joints_now_real.data[4] = msg.position[4];
+    joints_now_real.data[5] = msg.position[5];
+    
+}
+
 //手术器械关节角回调
 void RobotSubPub::call_back_endo(const std_msgs::Float32MultiArray& msg) {
     joints_now.data[6] = msg.data[0] + M_PI / 2;
     joints_now.data[7] = msg.data[1] - M_PI / 2;
     joints_now.data[8] = msg.data[2];
+    joints_now_real.data[6] = msg.data[0] + M_PI / 2;
+    joints_now_real.data[7] = msg.data[1] - M_PI / 2;
+    joints_now_real.data[8] = msg.data[2];
 }
 
 void RobotSubPub::get_joints_velocity(KDL::JntArray& msg1) {}//从相邻的关节角获取角速度
@@ -254,6 +278,8 @@ void RobotSubPub::pub_of_all(KDL::JntArray& msg1) {
         
         // cout << "joints delta are: " << joints_delta << endl;
         m_pub_of_joints.publish(m_jp);
+        m_pub_of_joints_real.publish(m_jp);
+
 
         // m_pub_of_v_p.publish(iiwa_joint);
         m_pub_of_endo.publish(endo_joints);

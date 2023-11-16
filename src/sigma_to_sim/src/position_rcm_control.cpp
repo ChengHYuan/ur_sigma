@@ -428,21 +428,21 @@ int main(int argc, char* argv[]){
 
 
     //每次运行时，初始化轨迹规划到默认位置
-    while ((!sub_pub.is_vrep_get|| !sub_pub.is_fri_get)&&ros::ok()) {
+    while ((!sub_pub.is_vrep_get || !sub_pub.is_real_get) && ros::ok()) {
         ros::spinOnce();
-        if (!sub_pub.is_fri_get) {
-            ROS_INFO("Waiting for iiwa fri msg........");
+        if (!sub_pub.is_real_get) {
+            ROS_INFO("Waiting for ur real msg........");
         }
         if (!sub_pub.is_vrep_get) {
             ROS_INFO("Waiting for vrep start........");
         }
         ros::Duration(0.10).sleep();
     }
-    ROS_INFO("fri get !!!");
+    ROS_INFO("real robot get !!!");
     int count_range = 2000;
     for (int count = 0;count < count_range;++count) {
         
-        q_in = sub_pub.joint_planning(sub_pub.joints_now, q_init, count, count_range);
+        q_in = sub_pub.joint_planning(sub_pub.joints_now_real, q_init, count, count_range);
         
         sub_pub.pub_of_all(q_in);
         
