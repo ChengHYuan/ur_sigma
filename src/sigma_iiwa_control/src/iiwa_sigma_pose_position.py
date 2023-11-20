@@ -263,11 +263,7 @@ def pose_callback(msg):
     
     # print(diff_x,diff_y,diff_z)
     
-    # diff_x,diff_y,diff_z=master_adaptive_control(diff_x_origin, diff_y_origin, diff_z_origin)
-    
-    
-    
-
+    # diff_x,diff_y,diff_z=master_adaptive_control(diff_x_origin, diff_y_origin, diff_z_origin)  
     return
 
 
