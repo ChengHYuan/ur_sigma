@@ -1,8 +1,0 @@
-prefix=/home/chy/sigma_iiwa_simulation/ur_sigma/install
-
-Name: epos_driver
-Description: Description of epos_driver
-Version: 0.0.0
-Cflags: -I${prefix}/include
-Libs: -L${prefix}/lib -lepos_driver
-Requires: message_runtime roscpp std_msgs
