@@ -381,9 +381,10 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
     // cout << null_space_get(j_FULL) * null_motion << endl;
     // cout << "-------------------------" << endl;
 
-    double min_sigular = get_min_sigular(j_FULL);
+    double min_singular = get_min_sigular(j_FULL);
+    ROS_INFO("最小奇异值：%f", min_singular);
     // q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * null_motion;
-    q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * singular_avoid(q_origin,min_sigular,joints_limits_max);
+    q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * singular_avoid(q_origin,min_singular,joints_limits_max);
     
     // cout << pseudoInverse(j_FULL) << endl;
     // cout << "--------------------------" << endl;
