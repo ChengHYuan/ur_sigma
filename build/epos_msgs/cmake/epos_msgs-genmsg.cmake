@@ -24,7 +24,7 @@ add_custom_target(_epos_msgs_generate_messages_check_deps_${_filename}
 
 get_filename_component(_filename "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg" NAME_WE)
 add_custom_target(_epos_msgs_generate_messages_check_deps_${_filename}
-  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "epos_msgs" "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg" "epos_msgs/MotorState:std_msgs/Header"
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "epos_msgs" "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg" "std_msgs/Header:epos_msgs/MotorState"
 )
 
 #
@@ -42,7 +42,7 @@ _generate_msg_cpp(epos_msgs
 _generate_msg_cpp(epos_msgs
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg"
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/epos_msgs
 )
 
@@ -83,7 +83,7 @@ _generate_msg_eus(epos_msgs
 _generate_msg_eus(epos_msgs
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg"
   ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/epos_msgs
 )
 
@@ -124,7 +124,7 @@ _generate_msg_lisp(epos_msgs
 _generate_msg_lisp(epos_msgs
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg"
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/epos_msgs
 )
 
@@ -165,7 +165,7 @@ _generate_msg_nodejs(epos_msgs
 _generate_msg_nodejs(epos_msgs
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg"
   ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/epos_msgs
 )
 
@@ -206,7 +206,7 @@ _generate_msg_py(epos_msgs
 _generate_msg_py(epos_msgs
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg"
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/epos_msgs
 )
 

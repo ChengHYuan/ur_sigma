@@ -57,7 +57,7 @@ CMAKE_BINARY_DIR = /home/chy/sigma_iiwa_simulation/ur_sigma/build
 include epos_msgs/CMakeFiles/_epos_msgs_generate_messages_check_deps_MotorStates.dir/progress.make
 
 epos_msgs/CMakeFiles/_epos_msgs_generate_messages_check_deps_MotorStates:
-	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/epos_msgs && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py epos_msgs /home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg epos_msgs/MotorState:std_msgs/Header
+	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/epos_msgs && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py epos_msgs /home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg std_msgs/Header:epos_msgs/MotorState
 
 _epos_msgs_generate_messages_check_deps_MotorStates: epos_msgs/CMakeFiles/_epos_msgs_generate_messages_check_deps_MotorStates
 _epos_msgs_generate_messages_check_deps_MotorStates: epos_msgs/CMakeFiles/_epos_msgs_generate_messages_check_deps_MotorStates.dir/build.make

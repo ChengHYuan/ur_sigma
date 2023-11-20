@@ -44,7 +44,7 @@ add_custom_target(_dmp_generate_messages_check_deps_${_filename}
 
 get_filename_component(_filename "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv" NAME_WE)
 add_custom_target(_dmp_generate_messages_check_deps_${_filename}
-  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "dmp" "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv" "dmp/DMPPoint:dmp/DMPTraj:dmp/DMPData"
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "dmp" "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv" "dmp/DMPPoint:dmp/DMPData:dmp/DMPTraj"
 )
 
 get_filename_component(_filename "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/SetActiveDMP.srv" NAME_WE)
@@ -59,7 +59,7 @@ add_custom_target(_dmp_generate_messages_check_deps_${_filename}
 
 get_filename_component(_filename "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv" NAME_WE)
 add_custom_target(_dmp_generate_messages_check_deps_${_filename}
-  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "dmp" "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv" "nav_msgs/Path:geometry_msgs/Pose:geometry_msgs/Quaternion:geometry_msgs/Point:geometry_msgs/PoseStamped:std_msgs/Header"
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "dmp" "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv" "geometry_msgs/PoseStamped:geometry_msgs/Point:geometry_msgs/Pose:nav_msgs/Path:geometry_msgs/Quaternion:std_msgs/Header"
 )
 
 #
@@ -103,7 +103,7 @@ _generate_srv_cpp(dmp
 _generate_srv_cpp(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg"
+  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg"
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/dmp
 )
 _generate_srv_cpp(dmp
@@ -121,7 +121,7 @@ _generate_srv_cpp(dmp
 _generate_srv_cpp(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv"
   "${MSG_I_FLAGS}"
-  "/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/dmp
 )
 
@@ -200,7 +200,7 @@ _generate_srv_eus(dmp
 _generate_srv_eus(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg"
+  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg"
   ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/dmp
 )
 _generate_srv_eus(dmp
@@ -218,7 +218,7 @@ _generate_srv_eus(dmp
 _generate_srv_eus(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv"
   "${MSG_I_FLAGS}"
-  "/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/dmp
 )
 
@@ -297,7 +297,7 @@ _generate_srv_lisp(dmp
 _generate_srv_lisp(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg"
+  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg"
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/dmp
 )
 _generate_srv_lisp(dmp
@@ -315,7 +315,7 @@ _generate_srv_lisp(dmp
 _generate_srv_lisp(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv"
   "${MSG_I_FLAGS}"
-  "/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/dmp
 )
 
@@ -394,7 +394,7 @@ _generate_srv_nodejs(dmp
 _generate_srv_nodejs(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg"
+  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg"
   ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/dmp
 )
 _generate_srv_nodejs(dmp
@@ -412,7 +412,7 @@ _generate_srv_nodejs(dmp
 _generate_srv_nodejs(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv"
   "${MSG_I_FLAGS}"
-  "/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/dmp
 )
 
@@ -491,7 +491,7 @@ _generate_srv_py(dmp
 _generate_srv_py(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv"
   "${MSG_I_FLAGS}"
-  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg"
+  "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg;/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg"
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/dmp
 )
 _generate_srv_py(dmp
@@ -509,7 +509,7 @@ _generate_srv_py(dmp
 _generate_srv_py(dmp
   "/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv"
   "${MSG_I_FLAGS}"
-  "/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
+  "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/noetic/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/noetic/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/dmp
 )
 

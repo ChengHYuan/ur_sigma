@@ -68,8 +68,8 @@ epos_msgs/CMakeFiles/epos_msgs_generate_messages_lisp: /home/chy/sigma_iiwa_simu
 
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/share/common-lisp/ros/epos_msgs/msg/MotorStates.lisp: /opt/ros/noetic/lib/genlisp/gen_lisp.py
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/share/common-lisp/ros/epos_msgs/msg/MotorStates.lisp: /home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/share/common-lisp/ros/epos_msgs/msg/MotorStates.lisp: /home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/share/common-lisp/ros/epos_msgs/msg/MotorStates.lisp: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/share/common-lisp/ros/epos_msgs/msg/MotorStates.lisp: /home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorState.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/chy/sigma_iiwa_simulation/ur_sigma/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Lisp code from epos_msgs/MotorStates.msg"
 	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/epos_msgs && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genlisp/cmake/../../../lib/genlisp/gen_lisp.py /home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg/MotorStates.msg -Iepos_msgs:/home/chy/sigma_iiwa_simulation/ur_sigma/src/epos_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -p epos_msgs -o /home/chy/sigma_iiwa_simulation/ur_sigma/devel/share/common-lisp/ros/epos_msgs/msg
 

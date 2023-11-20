@@ -57,7 +57,7 @@ CMAKE_BINARY_DIR = /home/chy/sigma_iiwa_simulation/ur_sigma/build
 include dmp/CMakeFiles/_dmp_generate_messages_check_deps_GoalToPath.dir/progress.make
 
 dmp/CMakeFiles/_dmp_generate_messages_check_deps_GoalToPath:
-	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/dmp && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py dmp /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv nav_msgs/Path:geometry_msgs/Pose:geometry_msgs/Quaternion:geometry_msgs/Point:geometry_msgs/PoseStamped:std_msgs/Header
+	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/dmp && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py dmp /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv geometry_msgs/PoseStamped:geometry_msgs/Point:geometry_msgs/Pose:nav_msgs/Path:geometry_msgs/Quaternion:std_msgs/Header
 
 _dmp_generate_messages_check_deps_GoalToPath: dmp/CMakeFiles/_dmp_generate_messages_check_deps_GoalToPath
 _dmp_generate_messages_check_deps_GoalToPath: dmp/CMakeFiles/_dmp_generate_messages_check_deps_GoalToPath.dir/build.make

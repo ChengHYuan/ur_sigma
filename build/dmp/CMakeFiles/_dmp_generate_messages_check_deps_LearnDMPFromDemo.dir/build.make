@@ -57,7 +57,7 @@ CMAKE_BINARY_DIR = /home/chy/sigma_iiwa_simulation/ur_sigma/build
 include dmp/CMakeFiles/_dmp_generate_messages_check_deps_LearnDMPFromDemo.dir/progress.make
 
 dmp/CMakeFiles/_dmp_generate_messages_check_deps_LearnDMPFromDemo:
-	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/dmp && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py dmp /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv dmp/DMPPoint:dmp/DMPTraj:dmp/DMPData
+	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/dmp && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py dmp /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv dmp/DMPPoint:dmp/DMPData:dmp/DMPTraj
 
 _dmp_generate_messages_check_deps_LearnDMPFromDemo: dmp/CMakeFiles/_dmp_generate_messages_check_deps_LearnDMPFromDemo
 _dmp_generate_messages_check_deps_LearnDMPFromDemo: dmp/CMakeFiles/_dmp_generate_messages_check_deps_LearnDMPFromDemo.dir/build.make

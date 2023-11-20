@@ -101,8 +101,8 @@ dmp/CMakeFiles/dmp_generate_messages_py: /home/chy/sigma_iiwa_simulation/ur_sigm
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_LearnDMPFromDemo.py: /opt/ros/noetic/lib/genpy/gensrv_py.py
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_LearnDMPFromDemo.py: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_LearnDMPFromDemo.py: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_LearnDMPFromDemo.py: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_LearnDMPFromDemo.py: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_LearnDMPFromDemo.py: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/chy/sigma_iiwa_simulation/ur_sigma/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Generating Python code from SRV dmp/LearnDMPFromDemo"
 	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/dmp && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genpy/cmake/../../../lib/genpy/gensrv_py.py /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv -Idmp:/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p dmp -o /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv
 
@@ -120,11 +120,11 @@ dmp/CMakeFiles/dmp_generate_messages_py: /home/chy/sigma_iiwa_simulation/ur_sigm
 
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/lib/genpy/gensrv_py.py
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/nav_msgs/msg/Path.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/nav_msgs/msg/Path.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv/_GoalToPath.py: /opt/ros/noetic/share/std_msgs/msg/Header.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/chy/sigma_iiwa_simulation/ur_sigma/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Generating Python code from SRV dmp/GoalToPath"
 	cd /home/chy/sigma_iiwa_simulation/ur_sigma/build/dmp && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genpy/cmake/../../../lib/genpy/gensrv_py.py /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv -Idmp:/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p dmp -o /home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages/dmp/srv

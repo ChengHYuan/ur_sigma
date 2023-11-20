@@ -18,6 +18,7 @@ Eigen::Vector3d p_c(0.702, 0, 0.217);//RCM点
 
 Jacobian jaco_t(9);
 
+vector<double> joints_limits_max = { 180,   180,    180,    180,    180,    180,    180, 80, 80 };
 
 Eigen::Matrix3d pcpr_cross;
 Eigen::Vector3d p_r, pcpr_differ;
@@ -218,6 +219,45 @@ void ik_solver_test(SurgicalRobotUR& robot) {
     }
 }
 
+double get_min_sigular(const Eigen::MatrixXd& matrix) {
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(matrix, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    double smallestSingularValue = svd.singularValues().tail(1)(0);
+    return smallestSingularValue;
+}
+
+Eigen::MatrixXd singular_avoid(JntArray& q, double& delta, vector<double>& q_max) {
+    int num = 10;
+    Eigen::MatrixXd q_avoid(num,1);
+
+    //计算deltaH
+    vector<double> lamda_lim = { 0,1 };
+    vector<double> H_gred(num);
+    for (int i = 0;i < H_gred.size()-1;++i) {
+        H_gred[i] = ((2 * q_max[i]) * (2 * q_max[i]) * (2 * q(i))) / (num * (q_max[i] - q(i)) * (q_max[i] - q(i)) * (q(i) + q_max[i]) * (q(i) + q_max[i]));
+    }
+    H_gred[num - 1] = ((2 * lamda_lim[1]) * (2 * lamda_lim[1]) * (2 * q(num - 1) - lamda_lim[0] - lamda_lim[1])) / (num * (lamda_lim[1] - q(num - 1)) * (lamda_lim[1] - q(num - 1)) * (q(num - 1) - lamda_lim[0]) * (q(num - 1) - lamda_lim[0]));
+
+    //计算系数K，与可操作性有关
+    double delta_0 = 0.00001;
+    double K = 0.0;
+    double K_m = 0.1;
+    if (delta >= 0 && delta < delta_0) {
+        K = 0.0;
+    }
+    else if (delta >= delta_0 && delta < 2 * delta_0) {
+        K_m* (sin(M_PI * delta / delta_0 + M_PI / 2) + 1.0) / 2.0;
+    }
+    else if (delta >= 2 * delta_0) {
+        K_m = 0.1;
+    }
+
+    for (int j = 0;j < q_avoid.size();++j) {
+        q_avoid(j) = K * H_gred[j];
+    }
+    return q_avoid;
+
+}
+
 
 //每时每刻将关节角的输出值限制在-pi到+pi之间
 void limit_joints(JntArray &q) {
@@ -250,8 +290,8 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
     Vector p_delta_ii;
     Vector p_RCM;
     Eigen::MatrixXd error_RCM(3, 1), error_FULL(9, 1), null_motion(10, 1);
-    null_motion << 0,0,0,0,0,0,0,0,0,0;//零空间运动初始值
-    null_motion = null_motion * 0;
+    null_motion << -0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0;//零空间运动初始值
+    null_motion = null_motion * 0.0;
     Eigen::MatrixXd q_delta_DOUBLE(10, 1);
     
     robot_fk_solver.JntToCart(q_origin, frame_t);
@@ -289,7 +329,7 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
     
     //检测约束雅克比可操作性是否超出范围 over_flag将变为true，此时认为本次迭代失败
     double manipula = sqrt((j_FULL * j_FULL.transpose()).determinant());
-    // cout << "----------manipula: " << manipula << "----------" << endl;
+    cout << "----------manipula: " << manipula << "----------" << endl;
     //设置第一道线，当可操作性小于一个值时，不发送角度
     if (manipula < 0.0005 && manipula > 0.0001) {
         over1_flag = true;
@@ -340,7 +380,11 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
     // q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL;
     // cout << null_space_get(j_FULL) * null_motion << endl;
     // cout << "-------------------------" << endl;
-    q_delta_DOUBLE = pseudoInverse(j_FULL) *error_FULL + null_space_get(j_FULL) * null_motion;
+
+    double min_sigular = get_min_sigular(j_FULL);
+    // q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * null_motion;
+    q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * singular_avoid(q_origin,min_sigular,joints_limits_max);
+    
     // cout << pseudoInverse(j_FULL) << endl;
     // cout << "--------------------------" << endl;
     set_k_error();
@@ -428,48 +472,46 @@ int main(int argc, char* argv[]){
 
 
     //每次运行时，初始化轨迹规划到默认位置
-    while ((!sub_pub.is_vrep_get || !sub_pub.is_real_get) && ros::ok()) {
-        ros::spinOnce();
-        if (!sub_pub.is_real_get) {
-            ROS_INFO("Waiting for ur real msg........");
-        }
-        if (!sub_pub.is_vrep_get) {
-            ROS_INFO("Waiting for vrep start........");
-        }
-        ros::Duration(0.10).sleep();
-    }
-    ROS_INFO("real robot get !!!");
-    int count_range = 2000;
-    for (int count = 0;count < count_range;++count) {
+    // while ((!sub_pub.is_vrep_get || !sub_pub.is_real_get) && ros::ok()) {
+    //     ros::spinOnce();
+    //     if (!sub_pub.is_real_get) {
+    //         ROS_INFO("Waiting for ur real msg........");
+    //     }
+    //     if (!sub_pub.is_vrep_get) {
+    //         ROS_INFO("Waiting for vrep start........");
+    //     }
+    //     ros::Duration(0.10).sleep();
+    // }
+    // ROS_INFO("real robot get !!!");
+    // int count_range = 2000;
+    // for (int count = 0;count < count_range;++count) {
         
-        q_in = sub_pub.joint_planning(sub_pub.joints_now_real, q_init, count, count_range);
+    //     q_in = sub_pub.joint_planning(sub_pub.joints_now_real, q_init, count, count_range);
         
-        sub_pub.pub_of_all(q_in);
+    //     sub_pub.pub_of_all(q_in);
         
-        if (count % 100 == 0) {
-            ROS_INFO("------%d msg sent!!-------", count);
-        }
-        // pri.print_joints(q_in);
-        rate.sleep();
-    }
-    sub_pub.joints_pubed = q_in;
-    ROS_INFO("Joints Planning Success!!");
-    ROS_INFO("Teleoperation Start!!");
-
-    
+    //     if (count % 100 == 0) {
+    //         ROS_INFO("------%d msg sent!!-------", count);
+    //     }
+    //     // pri.print_joints(q_in);
+    //     rate.sleep();
+    // }
+    // sub_pub.joints_pubed = q_in;
+    // ROS_INFO("Joints Planning Success!!");
+    // ROS_INFO("Teleoperation Start!!");
 
     for (int t = 0;t < 10;++t) {
         ros::spinOnce();
         // ROS_INFO("msgs getting.....");
         ros::Duration(0.05).sleep();
     }
-    Eigen::Vector3d p_c_saved=p_c;
+    
+    Eigen::Vector3d p_c_saved = p_c;
     while (ros::ok())
     {
         double start = ros::Time::now().toSec();
-        // frame_in = circle_traj(end_position, itr_step);
-        frame_in = sub_pub.command_frame;
-
+        frame_in = circle_traj(end_position, itr_step);
+        // frame_in = sub_pub.command_frame;
 
         q_in = sub_pub.joints_now;
         

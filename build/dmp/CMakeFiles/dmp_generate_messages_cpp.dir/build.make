@@ -105,8 +105,8 @@ dmp/CMakeFiles/dmp_generate_messages_cpp: /home/chy/sigma_iiwa_simulation/ur_sig
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/LearnDMPFromDemo.h: /opt/ros/noetic/lib/gencpp/gen_cpp.py
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/LearnDMPFromDemo.h: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/LearnDMPFromDemo.srv
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/LearnDMPFromDemo.h: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPPoint.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/LearnDMPFromDemo.h: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/LearnDMPFromDemo.h: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPData.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/LearnDMPFromDemo.h: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/msg/DMPTraj.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/LearnDMPFromDemo.h: /opt/ros/noetic/share/gencpp/msg.h.template
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/LearnDMPFromDemo.h: /opt/ros/noetic/share/gencpp/srv.h.template
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/chy/sigma_iiwa_simulation/ur_sigma/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Generating C++ code from dmp/LearnDMPFromDemo.srv"
@@ -130,11 +130,11 @@ dmp/CMakeFiles/dmp_generate_messages_cpp: /home/chy/sigma_iiwa_simulation/ur_sig
 
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/lib/gencpp/gen_cpp.py
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/srv/GoalToPath.srv
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/nav_msgs/msg/Path.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
-/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/nav_msgs/msg/Path.msg
+/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/std_msgs/msg/Header.msg
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/gencpp/msg.h.template
 /home/chy/sigma_iiwa_simulation/ur_sigma/devel/include/dmp/GoalToPath.h: /opt/ros/noetic/share/gencpp/srv.h.template

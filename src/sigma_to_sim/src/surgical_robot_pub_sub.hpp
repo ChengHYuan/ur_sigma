@@ -53,6 +53,7 @@ public:
     int total_N;
 
     vector<double> joints_limits_max;
+    
     ros::Time time;
 
 
@@ -126,7 +127,7 @@ public:
        
         // joints_now.data << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
         // joints_limits_max = {170,   120,    170,    120,    170,    120,    175, 120, 60, 60 };//iiwa
-        joints_limits_max = {180,   180,    180,    180,    180,    180,    180, 80, 80};//iiwa
+        joints_limits_max = { 180,   180,    180,    180,    180,    180,    180, 80, 80 };//iiwa
     };
     void sub_pub_init() {
         m_sub_frame = m_h.subscribe("/iiwa/command/CartesianPose_origin", 1, &RobotSubPub::call_back_frame, this);//获取目标位姿
