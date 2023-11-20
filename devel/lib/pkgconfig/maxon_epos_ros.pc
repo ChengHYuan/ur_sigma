@@ -1,8 +1,0 @@
-prefix=/home/chy/sigma_iiwa_simulation/ur_sigma/devel
-
-Name: maxon_epos_ros
-Description: Description of maxon_epos_ros
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

@@ -1,8 +1,0 @@
-prefix=/home/chy/sigma_iiwa_simulation/ur_sigma/devel
-
-Name: sigma_iiwa_control
-Description: Description of sigma_iiwa_control
-Version: 0.0.0
-Cflags: -I/home/chy/sigma_iiwa_simulation/ur_sigma/src/sigma_iiwa_control/include
-Libs: -L${prefix}/lib -lsigma_iiwa_control
-Requires: roscpp rospy std_msgs iiwa_msgs

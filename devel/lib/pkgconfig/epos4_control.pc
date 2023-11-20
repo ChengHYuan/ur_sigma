@@ -1,8 +1,0 @@
-prefix=/home/chy/sigma_iiwa_simulation/ur_sigma/devel
-
-Name: epos4_control
-Description: Description of epos4_control
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: epos_driver roscpp rospy std_msgs iiwa_msgs epos_msgs

@@ -1,8 +1,0 @@
-prefix=/home/chy/sigma_iiwa_simulation/ur_sigma/devel
-
-Name: dmp
-Description: Description of dmp
-Version: 0.0.0
-Cflags: -I/home/chy/sigma_iiwa_simulation/ur_sigma/devel/include -I/home/chy/sigma_iiwa_simulation/ur_sigma/src/dmp/include
-Libs: -L${prefix}/lib 
-Requires: common_msgs image_common message_runtime
