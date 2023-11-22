@@ -101,10 +101,10 @@ void Epos4Control::decouple_joints(const std::vector<float>& joints_msgs) {
 
     // cout << "joints_angles: " << joints_motor << endl;
     
-    m_msg_sent->states[3].position = joints_motor(3) + joints_msgs[3] / 2;
-    m_msg_sent->states[0].position = joints_motor(2) + joints_msgs[3] / 2;
-    m_msg_sent->states[2].position = joints_motor(1);
-    m_msg_sent->states[1].position = joints_motor(0);
+    m_msg_sent->states[1].position = joints_motor(3) + joints_msgs[3] / 2;
+    m_msg_sent->states[2].position = joints_motor(2) + joints_msgs[3] / 2;
+    m_msg_sent->states[3].position = joints_motor(1);
+    m_msg_sent->states[0].position = joints_motor(0);
 
 }
 
@@ -184,7 +184,7 @@ void Epos4Control::callback_vel(const std_msgs::Float32MultiArray& msg) {
 }
 
 void Epos4Control::test_for_motor(int step, int step_num) {//测试每一个电机是哪一个
-    int num = 1;
+    int num = 0;
 
     m_msg_sent->states[num].position = M_PI / 24 * sin(10 * step * M_PI / step_num);
     // m_msg_sent->states[num].position = M_PI/12;

@@ -1,0 +1,12 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages",
+        "/home/chy/iiwa_stack_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/chy/sigma_iiwa_simulation/ur_sigma/devel/lib/python3/dist-packages",
+        "/home/chy/iiwa_stack_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
+}

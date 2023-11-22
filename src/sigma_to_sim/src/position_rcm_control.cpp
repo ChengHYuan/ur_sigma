@@ -18,11 +18,11 @@ Eigen::Vector3d p_c(0.702, 0, 0.217);//RCM点
 
 Jacobian jaco_t(9);
 
-vector<double> joints_limits_max = { 180,   180,    180,    180,    180,    180,    180, 80, 80 };
-
+vector<double> joints_limits_max = { M_PI,   M_PI,    M_PI,    M_PI,    M_PI,    M_PI,    M_PI+M_PI/2, M_PI*80/180-M_PI/2, M_PI*80/180,1.0 };
+vector<double> joints_limits_min = { -M_PI,   -M_PI,    -M_PI,    -M_PI,    -M_PI,    -M_PI,    -M_PI+M_PI/2, M_PI*80/180-M_PI/2, M_PI*80/180 ,0.0};
 Eigen::Matrix3d pcpr_cross;
 Eigen::Vector3d p_r, pcpr_differ;
-Frame frame_t, frame_in;
+Frame frame_in;
 Twist error_delta_twist;
 Eigen::MatrixXd error_rcm(2, 1);
 ChainJntToJacSolver jacSolver(robot_chain);
@@ -34,7 +34,7 @@ double min_error = 1e-5;
 Eigen::Matrix<double, 6, 1> error_delta;
 
 Printer pri;
-Frame frame_7, frame_8;
+Frame frame_7, frame_8,frame_t;
 Jacobian jac_7(9), jac_8(9);
 Eigen::MatrixXd jac_7_double(6, 9), jac_8_double(6, 9);
 
@@ -118,6 +118,40 @@ Frame circle_traj(Vector endPosi,int step) {
     Frame answer(target_posi);
     // pri.print_frame(answer);
     answer.M.DoRotY(M_PI / 2);
+    return answer;
+}
+//方轨迹测试
+Frame square_traj(Vector endPosi,int step) {
+    double side = 0.12;
+    int index_size = 3000;
+    double delta_x = 0.0, delta_y = 0.0;
+    int step_left = step % index_size;
+    double plus_value = 4 * side / index_size;
+    
+    if (step_left < index_size / 4) {
+        delta_x =- side / 2;
+        delta_y =- side / 2+step_left*plus_value;
+    }
+    else if((index_size / 4<=step_left )&& (step_left<index_size / 2) ){
+        delta_x = -side / 2+(step_left-index_size / 4)*plus_value;
+        delta_y = side / 2;
+    }
+    else if ((index_size / 2<=step_left )&& (step_left<3*index_size / 4)) {
+        delta_x = side / 2;
+        delta_y = side / 2-(step_left-index_size / 2)*plus_value;
+    }
+    else {
+        delta_x = side / 2-(step_left-3*index_size / 4)*plus_value;
+        delta_y = -side / 2;
+    }
+
+    Vector target_posi(endPosi.x() + delta_x,
+                       endPosi.y() + delta_y,endPosi.z()-0.02);
+
+    Frame answer(target_posi);
+    // pri.print_frame(answer);
+    answer.M.DoRotY(M_PI / 2);
+    // pri.print_frame(answer);
     return answer;
 }
 
@@ -225,35 +259,39 @@ double get_min_sigular(const Eigen::MatrixXd& matrix) {
     return smallestSingularValue;
 }
 
-Eigen::MatrixXd singular_avoid(JntArray& q, double& delta, vector<double>& q_max) {
+//奇异值避免
+Eigen::MatrixXd singular_avoid(Eigen::MatrixXd& q, double& delta) {
     int num = 10;
     Eigen::MatrixXd q_avoid(num,1);
-
+    
     //计算deltaH
-    vector<double> lamda_lim = { 0,1 };
     vector<double> H_gred(num);
-    for (int i = 0;i < H_gred.size()-1;++i) {
-        H_gred[i] = ((2 * q_max[i]) * (2 * q_max[i]) * (2 * q(i))) / (num * (q_max[i] - q(i)) * (q_max[i] - q(i)) * (q(i) + q_max[i]) * (q(i) + q_max[i]));
+    for (int i = 0;i < H_gred.size();++i) {
+        H_gred[i] = ((joints_limits_max[i] - joints_limits_min[i]) * (joints_limits_max[i] - joints_limits_min[i])
+            * (2 * q(i) - joints_limits_max[i] - joints_limits_min[i])) / (num * (joints_limits_max[i] - q(i))
+                * (joints_limits_max[i] - q(i)) * (q(i) - joints_limits_min[i]) * (q(i) - joints_limits_min[i]));
     }
-    H_gred[num - 1] = ((2 * lamda_lim[1]) * (2 * lamda_lim[1]) * (2 * q(num - 1) - lamda_lim[0] - lamda_lim[1])) / (num * (lamda_lim[1] - q(num - 1)) * (lamda_lim[1] - q(num - 1)) * (q(num - 1) - lamda_lim[0]) * (q(num - 1) - lamda_lim[0]));
 
+    cout << "H:" << H_gred[0]<<" "<<H_gred[1] <<" "<<H_gred[2]<<" "<<H_gred[3]<< H_gred[4]<<" "<<H_gred[5] <<" "<<H_gred[6]<<" "<<H_gred[7]<< endl;
     //计算系数K，与可操作性有关
-    double delta_0 = 0.00001;
+    double delta_0 = 0.03;
     double K = 0.0;
-    double K_m = 0.1;
+    double K_m = 0.01;
     if (delta >= 0 && delta < delta_0) {
         K = 0.0;
     }
     else if (delta >= delta_0 && delta < 2 * delta_0) {
-        K_m* (sin(M_PI * delta / delta_0 + M_PI / 2) + 1.0) / 2.0;
+        K=K_m* (sin(M_PI * delta / delta_0 + M_PI / 2) + 1.0) / 2.0;
     }
     else if (delta >= 2 * delta_0) {
-        K_m = 0.1;
+        K=K_m;
     }
-
+    // cout << "K:" <<K<< endl;
+    
     for (int j = 0;j < q_avoid.size();++j) {
         q_avoid(j) = K * H_gred[j];
     }
+    
     return q_avoid;
 
 }
@@ -281,26 +319,87 @@ void limit_joints(JntArray &q) {
     }
 }
 
+double get_fake_manipulate(const Eigen::MatrixXd& q_fake) {
+    double lamda = q_fake(9);
+    JntArray q_origin(9);
+    q_origin.data = q_fake.block(0, 0, 9, 1);
+
+    Frame frame_7_fake, frame_8_fake,frame_t_fake;
+    Eigen::MatrixXd j_RCM(3, 10), j_FULL(9, 10);
+    Jacobian jac_7_fake(9), jac_8_fake(9),jac_t_fake(9);
+    robot_fk_solver.JntToCart(q_origin, frame_t_fake);
+    robot_fk_solver.JntToCart(q_origin, frame_7_fake, 6);
+    robot_fk_solver.JntToCart(q_origin, frame_8_fake, 7);
+    // pri.print_frame(frame_t);
+    // pri.print_frame(frame_9);
+    
+    Vector p_delta_ii;
+    p_delta_ii = frame_8.p - frame_7.p;
+    // cout << "p_i-p_i+1: " << p_delta_ii.data[0] << " " << p_delta_ii.data[1] << " " << p_delta_ii.data[2] << endl;
+    //获取 第8个关节 第九个关节 雅克比
+    jacSolver.JntToJac(q_origin, jac_7_fake, 6);
+    jacSolver.JntToJac(q_origin, jac_8_fake, 7);
+    jacSolver.JntToJac(q_origin, jac_t_fake);
+
+
+    j_RCM.block(0, 0, 3, 9) = (jac_7_fake.data + lamda * (jac_8_fake.data - jac_7_fake.data)).block(0, 0, 3, 9);
+    j_RCM.block(0, 9, 3, 1) << p_delta_ii.x(), p_delta_ii.y(), p_delta_ii.z();
+    // ROS_INFO("flag!");
+    
+    //计算总的雅可比矩阵
+    j_FULL.block(0, 0, 6, 9) = jac_t_fake.data;
+    j_FULL.block(0, 9, 6, 1) << 0, 0, 0, 0, 0, 0;
+    j_FULL.block(6, 0, 3, 10) = j_RCM;
+
+    double manipula = sqrt((j_FULL * j_FULL.transpose()).determinant());
+
+    return manipula;
+
+}
+
+//约束第五个关节，当超出时在零空间施加反向角度进行约束
+void limit_joint_5(JntArray& q_origin, Eigen::MatrixXd& q_delta, Eigen::MatrixXd& q_NULL) {
+    double bottom__lim = -120 * M_PI / 180;
+    double top_lim = 0.0;
+    // cout << q_NULL << endl;
+    // cout << "-------------------" << endl;
+    if (q_NULL(4) < 0) {
+        q_NULL = -q_NULL;
+    }
+    if (q_origin.data(4) + q_delta(4) > top_lim) {
+        
+        q_NULL = -q_NULL;
+    }
+    else if(q_delta(4)<bottom__lim) {
+        q_NULL = q_NULL;
+    }
+    else {
+        q_NULL = q_NULL *0.0;
+    }
+}
+
 //单步逆运动学 新 6自由度机器人
 JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, double& lamda,bool &over1_flag) {
     //设置第二道线，当可操作性值过小时，直接让角度归零
     bool over2_flag = false;
     
     Eigen::MatrixXd j_RCM(3, 10), j_FULL(9, 10);
-    Vector p_delta_ii;
+    
     Vector p_RCM;
     Eigen::MatrixXd error_RCM(3, 1), error_FULL(9, 1), null_motion(10, 1);
-    null_motion << -0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0;//零空间运动初始值
-    null_motion = null_motion * 0.0;
-    Eigen::MatrixXd q_delta_DOUBLE(10, 1);
+    null_motion << 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0;//零空间运动初始值
     
+    Eigen::MatrixXd q_delta_DOUBLE_up(10, 1),q_delta_DOUBLE_down(10, 1),q_delta_DOUBLE(10,1),q_NULL(10,1);
+
+    
+
     robot_fk_solver.JntToCart(q_origin, frame_t);
     robot_fk_solver.JntToCart(q_origin, frame_7, 6);
     robot_fk_solver.JntToCart(q_origin, frame_8, 7);
     // pri.print_frame(frame_t);
     // pri.print_frame(frame_9);
     
-
+    Vector p_delta_ii;
     p_delta_ii = frame_8.p - frame_7.p;
     // cout << "p_i-p_i+1: " << p_delta_ii.data[0] << " " << p_delta_ii.data[1] << " " << p_delta_ii.data[2] << endl;
     //获取 第8个关节 第九个关节 雅克比
@@ -329,7 +428,7 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
     
     //检测约束雅克比可操作性是否超出范围 over_flag将变为true，此时认为本次迭代失败
     double manipula = sqrt((j_FULL * j_FULL.transpose()).determinant());
-    cout << "----------manipula: " << manipula << "----------" << endl;
+    // cout << "----------manipula: " << manipula << "----------" << endl;
     //设置第一道线，当可操作性小于一个值时，不发送角度
     if (manipula < 0.0005 && manipula > 0.0001) {
         over1_flag = true;
@@ -348,6 +447,9 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
     // cout <<"j_FULL: "<< j_FULL << endl;
 
     p_RCM = frame_7.p + (frame_8.p - frame_7.p) * lamda;
+
+    
+
     // cout << "p_RCM: " << p_RCM.data[0] << " " << p_RCM.data[1] << " " << p_RCM.data[2] << endl;
     error_RCM << p_c(0) - p_RCM.data[0], p_c(1) - p_RCM.data[1], p_c(2) - p_RCM.data[2];
 
@@ -363,6 +465,7 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
     error_FULL.block(0, 0, 6, 1) = error_delta;
     error_FULL.block(6, 0, 3, 1) = error_RCM;
 
+    
     // cout << "error_full: " << error_FULL << endl;
 
     double error_norm = error_FULL.norm();
@@ -375,16 +478,54 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
     }
         
 
+
+    
     // cout << "jac_FULL" <<j_FULL<< endl;
 
     // q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL;
     // cout << null_space_get(j_FULL) * null_motion << endl;
     // cout << "-------------------------" << endl;
 
-    double min_singular = get_min_sigular(j_FULL);
-    ROS_INFO("最小奇异值：%f", min_singular);
-    // q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * null_motion;
-    q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * singular_avoid(q_origin,min_singular,joints_limits_max);
+    //计算最小奇异值
+    // double min_singular = get_min_sigular(j_FULL);
+    // // // ROS_INFO("min singular: %f", min_singular);
+    // Eigen::MatrixXd q_all(10, 1);
+    // q_all.block(0, 0, 9, 1) = q_origin.data;
+    // q_all(9) = lamda;
+    
+    // cout << "singular_axoid" << singular_avoid(q_all, min_singular, joints_limits_max) << endl;
+
+    q_NULL = null_space_get(j_FULL) * null_motion;
+    q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL;
+    
+    limit_joint_5(q_origin, q_delta_DOUBLE, q_NULL);
+    
+    
+
+
+    q_delta_DOUBLE =q_delta_DOUBLE+q_NULL ;//原始零空间无角度
+    // q_delta_DOUBLE_up = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * null_motion;
+    // q_delta_DOUBLE_down = pseudoInverse(j_FULL) * error_FULL - null_space_get(j_FULL) * null_motion;
+    // double mani_up = get_fake_manipulate(q_delta_DOUBLE_up);
+    // double mani_down = get_fake_manipulate(q_delta_DOUBLE_down);
+
+    // cout << "fake manipu up: " << mani_up << " fake mani down: " << mani_down << endl;
+
+
+    // if (mani_up >= mani_down) {
+    //     q_delta_DOUBLE = q_delta_DOUBLE_up;
+    // }
+    // else {
+    //     q_delta_DOUBLE = q_delta_DOUBLE_down;
+    // }
+
+    
+
+
+    
+
+    // pri.print_joints(q_origin);
+    // q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL + null_space_get(j_FULL) * singular_avoid(q_all, min_singular);
     
     // cout << pseudoInverse(j_FULL) << endl;
     // cout << "--------------------------" << endl;
@@ -394,13 +535,13 @@ JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, bool& stop_flag, doubl
 
     q_delta.data = q_delta_DOUBLE.block(0, 0, 9, 1);
 
-    //求逆解，更新角度与 λ 
+    //求逆解，更新角度与 λ
     lamda = lamda + q_delta_DOUBLE(9, 0);
     // cout << "lamda: " << lamda << endl;
     
     Add(q_origin, q_delta, q_answer);
     
-    limit_joints(q_answer);
+    // limit_joints(q_answer);
     
     
 
@@ -512,6 +653,7 @@ int main(int argc, char* argv[]){
     {
         double start = ros::Time::now().toSec();
         frame_in = circle_traj(end_position, itr_step);
+        // frame_in = square_traj(end_position, itr_step);
         // frame_in = sub_pub.command_frame;
 
         q_in = sub_pub.joints_now;

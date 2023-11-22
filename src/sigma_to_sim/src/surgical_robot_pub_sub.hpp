@@ -127,7 +127,8 @@ public:
        
         // joints_now.data << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
         // joints_limits_max = {170,   120,    170,    120,    170,    120,    175, 120, 60, 60 };//iiwa
-        joints_limits_max = { 180,   180,    180,    180,    180,    180,    180, 80, 80 };//iiwa
+        // joints_limits_max = { 180,   180,    180,    180,    180,    180,    180, 80, 80 };//ur1
+        joints_limits_max = { 360,   360,    360,    360,    360,    360,    360, 80, 80 };//ur2
     };
     void sub_pub_init() {
         m_sub_frame = m_h.subscribe("/iiwa/command/CartesianPose_origin", 1, &RobotSubPub::call_back_frame, this);//获取目标位姿
@@ -201,7 +202,7 @@ void RobotSubPub::call_back_joints(const sensor_msgs::JointState& msg) {
     joints_now.data[2] = msg.position[2];
     joints_now.data[3] = msg.position[3];
     joints_now.data[4] = msg.position[4];
-    joints_now.data[5] = msg.position[5];
+    joints_now.data[5] = msg.position[5]-M_PI/4;
     // cout << "j6: " << joints_now.data[5] << endl;
 }
 
@@ -213,7 +214,7 @@ void RobotSubPub::call_back_joints_real(const sensor_msgs::JointState &msg){
     joints_now_real.data[2] = msg.position[2];
     joints_now_real.data[3] = msg.position[3];
     joints_now_real.data[4] = msg.position[4];
-    joints_now_real.data[5] = msg.position[5];
+    joints_now_real.data[5] = msg.position[5]-M_PI/4;
     
 }
 
@@ -255,7 +256,7 @@ void RobotSubPub::pub_of_all(KDL::JntArray& msg1) {
         m_jp.position[2] = msg1.data[2];
         m_jp.position[3] = msg1.data[3];
         m_jp.position[4] = msg1.data[4];
-        m_jp.position[5] = msg1.data[5];
+        m_jp.position[5] = msg1.data[5]+M_PI/4;
 
 
         // cout << "flag4...." << endl;
