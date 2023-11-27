@@ -218,7 +218,7 @@ def cartesian_pose_callback(msg):
         time_now = msg.header.stamp.to_sec()
 
     x_before = position_box[1]
-    if np.sqrt(np.sum((x_local-x_before)**2)) > 0.0005:
+    if np.sqrt(np.sum((x_local-x_before)**2)) > 0.001:
         sample_velocity_vector = x_local-x_before
         position_box[0] = x_before
         position_box[1] = x_local
@@ -261,6 +261,8 @@ def pose_callback(msg):
     sigma_flag = True
     global diff_x, diff_y, diff_z, ox_diff, oy_diff, oz_diff, ow_diff, q0, sigma_pose, q0_diff, sigma_r
     global diff_x_origin, diff_y_origin, diff_z_origin,orientation_w, orientation_x, orientation_y, orientation_z,orientation_ref_w, orientation_ref_x, orientation_ref_y, orientation_ref_z
+    
+    # startt=rospy.Time.now()
     
     # 主手的姿态是反的
     sigma_ori_world=R.from_euler('z',mt.pi).as_matrix()
@@ -355,6 +357,11 @@ def pose_callback(msg):
     # rr = sigma_q.as_quat()
     # print(rr)
     sigma_r = sigma_q.as_matrix()
+    
+    # endd=rospy.Time.now()
+    
+    # print("duration: %f ms"%((endd-startt).nsecs/1e6))
+    
 
     return
 
@@ -398,45 +405,48 @@ def master_adaptive_control(diff_x_origin, diff_y_origin, diff_z_origin, ox_diff
 
     # print("s_velocity: ",s_velocity)
     # print("o_ref after:",orientation_ref_x, orientation_ref_y, orientation_ref_z,orientation_ref_w)
-    if np.linalg.norm(positionRate.v_master) > 0:
-        state_flag = True
+    # if np.linalg.norm(positionRate.v_master) > 0:
+    #     state_flag = True
 
-        poseAdaptive.get_local(x_local)
+    #     poseAdaptive.get_local(x_local)
 
-        poseAdaptive.load_local_save_pose(cartesian_init_pose)
+    #     poseAdaptive.load_local_save_pose(cartesian_init_pose)
 
-        qua_diff = poseAdaptive.next_pose(
-            1.0/250, euler_local, s_velocity, goal_predict)
+    #     qua_diff = poseAdaptive.next_pose(
+    #         1.0/250, euler_local, s_velocity, goal_predict)
 
-        # print("qua_diff:", qua_diff)
-        ox_diff = qua_diff[0]
-        oy_diff = qua_diff[1]
-        oz_diff = qua_diff[2]
-        ow_diff = qua_diff[3]
-    else:
-        if state_flag:
-            # print(ox_diff,oy_diff,oz_diff,ow_diff)
-            # print("o_ref before:",orientation_ref_x, orientation_ref_y, orientation_ref_z,orientation_ref_w)
-            [orientation_ref_x, orientation_ref_y, orientation_ref_z,orientation_ref_w]=reset_sigma_ref([ox_diff,oy_diff,oz_diff,ow_diff],[orientation_x, orientation_y, orientation_z,orientation_w])
-            # print("o_ref after:",orientation_ref_x, orientation_ref_y, orientation_ref_z,orientation_ref_w)
+    #     # print("qua_diff:", qua_diff)
+    #     ox_diff = qua_diff[0]
+    #     oy_diff = qua_diff[1]
+    #     oz_diff = qua_diff[2]
+    #     ow_diff = qua_diff[3]
+    # else:
+    #     if state_flag:
+    #         # print(ox_diff,oy_diff,oz_diff,ow_diff)
+    #         # print("o_ref before:",orientation_ref_x, orientation_ref_y, orientation_ref_z,orientation_ref_w)
+    #         [orientation_ref_x, orientation_ref_y, orientation_ref_z,orientation_ref_w]=reset_sigma_ref([ox_diff,oy_diff,oz_diff,ow_diff],[orientation_x, orientation_y, orientation_z,orientation_w])
+    #         # print("o_ref after:",orientation_ref_x, orientation_ref_y, orientation_ref_z,orientation_ref_w)
             
-            ox_diff_origin=ox_diff 
-            oy_diff_origin=oy_diff
-            oz_diff_origin=oz_diff 
-            ow_diff_origin=ow_diff 
-            # print(ox_diff,oy_diff,oz_diff,ow_diff)
-            # print(state_flag)
-            state_flag = False 
+    #         ox_diff_origin=ox_diff 
+    #         oy_diff_origin=oy_diff
+    #         oz_diff_origin=oz_diff 
+    #         ow_diff_origin=ow_diff 
+    #         # print(ox_diff,oy_diff,oz_diff,ow_diff)
+    #         # print(state_flag)
+    #         state_flag = False 
             
-        # print(ox_diff,oy_diff,oz_diff,ow_diff)
-        ox_diff = ox_diff_origin
-        oy_diff = oy_diff_origin
-        oz_diff = oz_diff_origin
-        ow_diff = ow_diff_origin
+    #     # print(ox_diff,oy_diff,oz_diff,ow_diff)
+    #     ox_diff = ox_diff_origin
+    #     oy_diff = oy_diff_origin
+    #     oz_diff = oz_diff_origin
+    #     ow_diff = ow_diff_origin
         
-        # print(ox_diff,oy_diff,oz_diff,ow_diff)
+    #     # print(ox_diff,oy_diff,oz_diff,ow_diff)
     
-    
+    ox_diff = ox_diff_origin
+    oy_diff = oy_diff_origin
+    oz_diff = oz_diff_origin
+    ow_diff = ow_diff_origin
     
     diff_x = positionRate.x_d[0]
     diff_y = positionRate.x_d[1]
@@ -474,15 +484,15 @@ def buttons_callback(msg):
     return
 
 def reset_sigma_ref(qua_diff,qua_sigma):
-    print("------------------------")
+    # print("------------------------")
     matrix_sigma=R.from_quat(qua_sigma).as_matrix()
-    print(matrix_sigma)
+    # print(matrix_sigma)
     matrix_diff=R.from_quat(qua_diff).as_matrix()
     
-    print(matrix_diff)
+    # print(matrix_diff)
     matrix_ori=matrix_diff.T@matrix_sigma
     o_ref=R.from_matrix(matrix_ori).as_quat()
-    print(matrix_ori)
+    # print(matrix_ori)
     return o_ref
     
 
@@ -658,7 +668,7 @@ def main():
             cartesian_pub.publish(cartesian_msg)
 
             # force_pub.publish(rate_control_force)
-            # force_pub.publish(training_force)
+            force_pub.publish(training_force)
             data_record.record_x_s(cartesian_msg)
             data_record.record_x_m(sigma_pose)
             data_record.record_x_s_abs(global_cart)

@@ -170,7 +170,7 @@ void peg_transfer_generate(std::vector<dmp::DMPPoint>& points, double time_step)
     int num = 2000;
     vector<double>start = start_point;
     vector<double>target = target_point;
-    double height = 0.07;
+    double height = 0.05;
     
     Eigen::Matrix3d rotationY;
     rotationY = Eigen::AngleAxisd(M_PI / 2.0, Eigen::Vector3d::UnitY());
@@ -458,8 +458,8 @@ int main(int argc, char** argv)
         // cout << "goal box: " << goal_box[2][0] << " " << goal_box[2][1] << " " << goal_box[2][2] << endl;
         // cout << "goal box: " << goal_box[3][0] << " " << goal_box[3][1] << " " << goal_box[3][2] << endl;
 
-        // for (int goal_index = 0;goal_index < goal_box.size();++goal_index) {
-        int goal_index = 1;
+        for (int goal_index = 0;goal_index < goal_box.size();++goal_index) {
+        // int goal_index = 1;
         if (clientActive.call(srvSetActive)) {
                 dmp::GetDMPPlan srvPlan;
                 for (int i = 0;i < 3;++i) srvPlan.request.x_0.push_back(start_point[i]);//设置起始点位置
@@ -503,8 +503,8 @@ int main(int argc, char** argv)
             }
 
 
-            // save_traj(traj, goal_index);
-        // }
+            save_traj(traj, goal_index);
+        }
 
 
 

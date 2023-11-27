@@ -224,6 +224,7 @@ include_directories(
 
 # add_executable(jacobian_rcm_control src/jacobian_rcm_control.cpp)
 add_executable(position_rcm_control src/position_rcm_control.cpp)
+add_executable(position_rcm_control_sim src/position_rcm_control_sim.cpp)
 add_executable(robot_joint_to_end src/robot_joint_to_end.cpp)
 # add_executable(joint_pub_action_server_test src/joint_pub_action_server_test.cpp)
 # add_executable(joint_spline_pub src/joint_spline_pub.cpp)
@@ -231,6 +232,7 @@ add_executable(robot_joint_to_end src/robot_joint_to_end.cpp)
 # target_link_libraries(jacobian_rcm_control ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES} )
 target_link_libraries(robot_joint_to_end  ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES} )
 target_link_libraries(position_rcm_control ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES} )
+target_link_libraries(position_rcm_control_sim ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES} )
 # target_link_libraries(joint_pub_action_server_test ${catkin_LIBRARIES} )
 # target_link_libraries(joint_spline_pub ${catkin_LIBRARIES} )
 

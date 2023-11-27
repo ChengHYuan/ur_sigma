@@ -30,7 +30,7 @@ JntArray q_delta(9), q_answer(9), q_in(9), v_out(9);
 
 JntArray q_init(9);
 
-double min_error = 1e-5;
+double min_error = 1e-4;
 Eigen::Matrix<double, 6, 1> error_delta;
 
 Printer pri;
@@ -584,7 +584,7 @@ double get_lamda(JntArray& q_origin) {
 
 int main(int argc, char* argv[]){
 
-    ros::init(argc, argv, "robot_rcm_control");
+    ros::init(argc, argv, "robot_rcm_control_sim");
     
     int step = 0;
     double flag = 1e-8;
@@ -607,40 +607,11 @@ int main(int argc, char* argv[]){
 
     // Frame frame_local;
     
-    ros::Rate rate(200);
+    ros::Rate rate(150);
     int itr_step = 0;
+    
+    q_init.data << 0.3426676094532013, -1.3702833652496338, -1.940365195274353, -2.97253680229187, -1.2970304489135742, -M_PI, 0.06891465932130814 + M_PI / 2, -M_PI / 2, 0.0;
 
-    q_init.data << 0.3426676094532013, -1.3702833652496338, -1.940365195274353, -2.97253680229187, -1.2970304489135742, -M_PI,0.06891465932130814+M_PI/2, -M_PI/2, 0.0;
-
-
-    //每次运行时，初始化轨迹规划到默认位置
-    while ((!sub_pub.is_vrep_get || !sub_pub.is_real_get) && ros::ok()) {
-        ros::spinOnce();
-        if (!sub_pub.is_real_get) {
-            ROS_INFO("Waiting for ur real msg........");
-        }
-        if (!sub_pub.is_vrep_get) {
-            ROS_INFO("Waiting for vrep start........");
-        }
-        ros::Duration(0.10).sleep();
-    }
-    ROS_INFO("real robot get !!!");
-    int count_range = 2000;
-    for (int count = 0;count < count_range;++count) {
-        
-        q_in = sub_pub.joint_planning(sub_pub.joints_now_real, q_init, count, count_range);
-        
-        sub_pub.pub_of_all(q_in);
-        
-        if (count % 100 == 0) {
-            ROS_INFO("------%d msg sent!!-------", count);
-        }
-        // pri.print_joints(q_in);
-        rate.sleep();
-    }
-    sub_pub.joints_pubed = q_in;
-    ROS_INFO("Joints Planning Success!!");
-    ROS_INFO("Teleoperation Start!!");
 
     for (int t = 0;t < 10;++t) {
         ros::spinOnce();

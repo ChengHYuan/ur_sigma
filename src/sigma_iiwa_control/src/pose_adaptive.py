@@ -127,11 +127,17 @@ class PoseAdaptive():
         
         if self.is_back:
             goal=4# 4 表示目标为起始点
-        
+            
+        radius=0.01
+
         goal_vector=self.goal_position[goal]-self.position_now
+        if np.linalg.norm(goal_vector)<radius:
+            goal_vector_plus=goal_vector-goal_vector/np.linalg.norm(goal_vector)*radius
+        else:
+            goal_vector_plus=goal_vector
         velocity_dim2=velocity[0:2]
         # print(velocity)
-        v_vector=np.dot(velocity_dim2,goal_vector)/np.linalg.norm(goal_vector)
+        v_vector=np.dot(velocity_dim2,goal_vector_plus)/np.linalg.norm(goal_vector_plus)
         
         # matrix1 = R.from_quat(qua_now).as_matrix()
         # matrix2 = R.from_quat(qua_goal).as_matrix()
@@ -152,7 +158,7 @@ class PoseAdaptive():
             print("------------------------------------------")
             rotvec = -rotvec * (2*math.pi / np.linalg.norm(rotvec))
 
-        k=np.linalg.norm(v_vector)*time_step*10/np.linalg.norm(goal_vector)
+        k=np.linalg.norm(v_vector)*time_step*10/np.linalg.norm(goal_vector_plus)
         
         # print(k)
         
@@ -161,6 +167,8 @@ class PoseAdaptive():
         rotated_rotation=  R.from_rotvec(rotated_rotvec)
         # 获取旋转后的旋转矩阵
         rotated_matrix = np.dot(rotated_rotation.as_matrix(), matrix1)
+        # if goal!=4:
+            # print("goal quat: ",R.from_matrix(matrix2).as_quat())
         
         rot_init=R.from_quat([self.cartesian_init_pose.pose.orientation.x,
                               self.cartesian_init_pose.pose.orientation.y,

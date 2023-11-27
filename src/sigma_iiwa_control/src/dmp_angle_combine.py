@@ -332,8 +332,10 @@ class DMPInter():
             print("------------------------------------------")
             rotvec = -rotvec * (2*math.pi / np.linalg.norm(rotvec))
 
-        k=np.linalg.norm(v_vector)*time_step/np.linalg.norm(goal_vector)
+        k=(1.0-np.linalg.norm(v_vector)*time_step/np.linalg.norm(goal_vector))*0.04
         
+        # k=np.linalg.norm(v_vector)*time_step/np.linalg.norm(goal_vector)*2
+        # k=0.09
         print(k)
         
         # 根据给定的系数进行旋转
@@ -385,10 +387,25 @@ class DMPInter():
                 v_z=v_z/np.linalg.norm(v_z)
                 # if j==1:
                     # print("v_x:    ",v_x)
-                ax.quiver(x, y, z, v_x[0],v_x[1],v_x[2],length=0.01, color='r')
-                ax.quiver(x, y, z, v_y[0],v_y[1],v_y[2],length=0.01, color='g')
-                ax.quiver(x, y, z, v_z[0],v_z[1],v_z[2],length=0.01, color='b')
-                
+                # ax.quiver(x, y, z, v_x[0],v_x[1],v_x[2],length=0.01, color='r')
+                # ax.quiver(x, y, z, v_y[0],v_y[1],v_y[2],length=0.01, color='g')
+                # ax.quiver(x, y, z, v_z[0],v_z[1],v_z[2],length=0.01, color='b')
+        
+        for m in range(len(self.goal_position)):
+            x,y=self.goal_position[m]
+            z=0.09
+            
+            rotation_matrix = R.from_euler('zyx', self.goals_euler[m], degrees=False).as_matrix()
+            v_x=np.array([rotation_matrix[0][0],rotation_matrix[1][0],rotation_matrix[2][0]])
+            v_y=np.array([rotation_matrix[0][1],rotation_matrix[1][1],rotation_matrix[2][1]])
+            v_z=np.array([rotation_matrix[0][2],rotation_matrix[1][2],rotation_matrix[2][2]])
+            
+            ax.quiver(x, y, z, v_x[0],v_x[1],v_x[2],length=0.01, color='r')
+            ax.quiver(x, y, z, v_y[0],v_y[1],v_y[2],length=0.01, color='g')
+            ax.quiver(x, y, z, v_z[0],v_z[1],v_z[2],length=0.01, color='b')
+            
+            
+        
         for k in range(len(path)):
             ax.scatter(path[k][0], path[k][1], path[k][2], color='k')
             rotation_now = R.from_euler('zyx', [path[k][3], path[k][4],path[k][5]], degrees=False).as_matrix()  
@@ -420,9 +437,10 @@ def main():
     
     m_DMP.goals_euler=m_DMP.from_angle_to_euler()
     
-    start=[0.7,0.05]
+    # start=m_DMP.goal_position[0]
+    start=[0.643,0.058]
     
-    endd=[0.662,-0.06]
+    endd=m_DMP.goal_position[1]
     status_now=[]
     
     position_nows=m_DMP.path_gen(start,endd,100)
@@ -469,8 +487,8 @@ def main():
     print(qua)
         
     # print(status_now)
-    print("euler_goal: ",m_DMP.goals_euler[3])
-    print("real_goal: ",m_DMP.paths_box[3][-1][3:6])
+    print("euler_goal: ",m_DMP.goals_euler[2])
+    # print("real_goal: ",m_DMP.paths_box[3][-1][3:6])
     
     m_DMP.plot_coordinates(m_DMP.sub_paths_box,status_now)
     return

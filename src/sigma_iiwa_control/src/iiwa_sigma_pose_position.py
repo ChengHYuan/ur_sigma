@@ -393,10 +393,10 @@ def main():
     # rospy.Subscriber('/iiwa/state/CartesianPose', CartesianPose, callback=cartesian_pose_callback_2, queue_size=10)
     rospy.Subscriber('/sigma7/sigma0/pose', PoseStamped,
                      callback=pose_callback, queue_size=1)
-    # rospy.Subscriber('/sigma7/sigma0/buttons', Joy,
-    #                  callback=buttons_callback, queue_size=1)
+    rospy.Subscriber('/sigma7/sigma0/buttons', Joy,
+                     callback=buttons_callback, queue_size=1)
     rospy.Subscriber('/trajectory',Path,callback=path_callback,queue_size=1)
-    rospy.Subscriber('/pedal/buttons', Joy, callback=buttons_callback, queue_size=1)
+    # rospy.Subscriber('/pedal/buttons', Joy, callback=buttons_callback, queue_size=1)
     # rospy.spin()
 
     # joint_pub = rospy.Publisher('/iiwa/command/JointPosition', JointPosition, queue_size=10)
