@@ -30,7 +30,7 @@ JntArray q_delta(9), q_answer(9), q_in(9), v_out(9);
 
 JntArray q_init(9);
 
-double min_error = 1e-4;
+double min_error = 1e-5;
 Eigen::Matrix<double, 6, 1> error_delta;
 
 Printer pri;

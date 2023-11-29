@@ -82,7 +82,9 @@ mode_change_flag = False
 
 q0 = 0
 q0_diff = 0
-sigma_r = 0
+sigma_r = np.matrix([[1, 0, 0],
+               [0, 1, 0],
+               [0, 0, 1]])
 
 
 position_ref_x = 0.0
@@ -134,56 +136,6 @@ def qua_to_rot(msg):
     # print(f'{end_R}')
     return
 
-# 将获取到的iiwa末端位姿转化为手术器械末端位姿
-
-
-def iiwa_to_tool(msg):
-    global endo_tool_pose, T_iiwa_to_tool
-    iiwa_x = msg.poseStamped.pose.position.x
-    iiwa_y = msg.poseStamped.pose.position.y
-    iiwa_z = msg.poseStamped.pose.position.z
-    iiwa_ori_x = msg.poseStamped.pose.orientation.x
-    iiwa_ori_y = msg.poseStamped.pose.orientation.y
-    iiwa_ori_z = msg.poseStamped.pose.orientation.z
-    iiwa_ori_w = msg.poseStamped.pose.orientation.w
-
-    # print(f'position1:{iiwa_x,iiwa_y,iiwa_z}')
-
-    # 旋转矩阵
-    iiwa_Q = R.from_quat([iiwa_ori_x, iiwa_ori_y, iiwa_ori_z, iiwa_ori_w])
-    iiwa_R = iiwa_Q.as_matrix()
-    # print(f'iiwa:{iiwa_R}')
-    # print(f'iiwa:{[iiwa_ori_x,iiwa_ori_y,iiwa_ori_z,iiwa_ori_w]}')
-    # 位置
-    iiwa_P = np.matrix([[iiwa_x], [iiwa_y], [iiwa_z]])
-    a = np.hstack((iiwa_R, iiwa_P))
-    b = np.matrix([0, 0, 0, 1])
-    iiwa_T = np.vstack((a, b))
-
-    iiwa_tool_T = iiwa_T*T_iiwa_to_tool
-    # print(f'iiwa:{iiwa_tool_T}')
-
-    iiwa_tool_R = R.from_matrix([[iiwa_tool_T[0, 0], iiwa_tool_T[0, 1], iiwa_tool_T[0, 2]],
-                                 [iiwa_tool_T[1, 0], iiwa_tool_T[1, 1],
-                                     iiwa_tool_T[1, 2]],
-                                 [iiwa_tool_T[2, 0], iiwa_tool_T[2, 1], iiwa_tool_T[2, 2]]])
-
-    iiwa_tool_Q = iiwa_tool_R.as_quat()
-    # print(f'Q:{iiwa_tool_Q}')
-    endo_tool_pose.poseStamped.header = msg.poseStamped.header
-    endo_tool_pose.redundancy = msg.redundancy
-    endo_tool_pose.poseStamped.pose.position.x = iiwa_tool_T[0, 3]
-    endo_tool_pose.poseStamped.pose.position.y = iiwa_tool_T[1, 3]
-    endo_tool_pose.poseStamped.pose.position.z = iiwa_tool_T[2, 3]
-    endo_tool_pose.poseStamped.pose.orientation.x = iiwa_tool_Q[0]
-    endo_tool_pose.poseStamped.pose.orientation.y = iiwa_tool_Q[1]
-    endo_tool_pose.poseStamped.pose.orientation.z = iiwa_tool_Q[2]
-    endo_tool_pose.poseStamped.pose.orientation.w = iiwa_tool_Q[3]
-
-    # print(f'position2:{iiwa_tool_T[0,3],iiwa_tool_T[1,3],iiwa_tool_T[2,3]}')
-
-    return endo_tool_pose
-
 # 获取笛卡尔坐标系
 
 
@@ -199,11 +151,6 @@ def cartesian_pose_callback(msg):
     x_local = np.array([cartesian_pose.pose.position.x,
                         cartesian_pose.pose.position.y,
                         cartesian_pose.pose.position.z])
-
-    euler_local = R.from_quat([cartesian_pose.pose.orientation.x,
-                               cartesian_pose.pose.orientation.y,
-                               cartesian_pose.pose.orientation.z,
-                               cartesian_pose.pose.orientation.w]).as_euler('zyx')
     
     qua_local=[cartesian_pose.pose.orientation.x,
                                cartesian_pose.pose.orientation.y,
@@ -308,9 +255,6 @@ def pose_callback(msg):
     sigma_pose.pose.orientation.y=orientation_y
     sigma_pose.pose.orientation.z=orientation_z
     sigma_pose.pose.orientation.w=orientation_w
-    
-    
-
 
     q0_ref = R.from_quat(
         [orientation_ref_x, orientation_ref_y, orientation_ref_z,orientation_ref_w]).as_matrix()
@@ -378,12 +322,39 @@ def pose_callback(msg):
 def master_adaptive_control(diff_x_origin, diff_y_origin, diff_z_origin, ox_diff_origin, oy_diff_origin, oz_diff_origin, ow_diff_origin):
     global rad_x, rad_y, rad_z, diff_x, diff_y, diff_z, predict, training, cartesian_init_pose
     global positionRate, cartesian_pose, sample_velocity_vector, position_box, path_desired, start_point
-    global training_force, x_local, buttons_flag, m_velocity, poseAdaptive, euler_local,qua_local, s_velocity, state_flag
+    global training_force, x_local, buttons_flag, m_velocity, poseAdaptive,qua_local, s_velocity, state_flag
     global orientation_ref_w, orientation_ref_x, orientation_ref_y, orientation_ref_z,ox_diff,oy_diff,oz_diff,ow_diff
     global orientation_w, orientation_x, orientation_y, orientation_z
+    global iiwa_p_new,iiwa_q_new,sigma_r
+    
+    
+    iiwa_x = cartesian_init_pose.pose.position.x
+    iiwa_y = cartesian_init_pose.pose.position.y
+    iiwa_z = cartesian_init_pose.pose.position.z
+
+    iiwa_ox = cartesian_init_pose.pose.orientation.x
+    iiwa_oy = cartesian_init_pose.pose.orientation.y
+    iiwa_oz = cartesian_init_pose.pose.orientation.z
+    iiwa_ow = cartesian_init_pose.pose.orientation.w
+    # print(f'pose:{cartesian_init_pose}')
+
+    iiwa_q = R.from_quat([iiwa_ox, iiwa_oy, iiwa_oz, iiwa_ow])
+
+    iiwa_r = iiwa_q.as_matrix()
+
+    iiwa_p = [iiwa_x,iiwa_y,iiwa_z]
+    
+    iiwa_r_new = sigma_r @ iiwa_r  
+
+    iiwa_p_diff = [-diff_x,-diff_y,diff_z]
+
+    iiwa_p_new = [iiwa_p[0]+iiwa_p_diff[0],iiwa_p[1]+iiwa_p_diff[1],iiwa_p[2]+iiwa_p_diff[2]]
+
+    iiwa_q_new = R.from_matrix(iiwa_r_new).as_quat()
+    
+    euler_local=R.from_matrix(iiwa_r_new).as_euler('zyx')
 
     
-
     # 预测目标
     # start=rospy.get_time()
     # print("x_sample:",position_box[1])
@@ -421,7 +392,7 @@ def master_adaptive_control(diff_x_origin, diff_y_origin, diff_z_origin, ox_diff
         poseAdaptive.load_local_save_pose(cartesian_init_pose)
 
         qua_diff = poseAdaptive.next_pose(
-            1.0/200, euler_local, s_velocity, goal_predict)
+            1.0/500, euler_local, s_velocity, goal_predict)
 
         # print("qua_diff:", qua_diff)
         ox_diff = qua_diff[0]
@@ -459,6 +430,7 @@ def master_adaptive_control(diff_x_origin, diff_y_origin, diff_z_origin, ox_diff
     diff_x = positionRate.x_d[0]
     diff_y = positionRate.x_d[1]
     diff_z = positionRate.x_d[2]
+    
     # print("diff_x:",diff_x)
     # print("diff_y:",diff_y)
     # print("diff_z:",diff_z)
@@ -580,6 +552,7 @@ def position_force(rad_x, rad_y, rad_z):
 def main():
     global position_ref_x, position_ref_y, position_ref_z, orientation_ref_x, orientation_ref_y, orientation_ref_z, orientation_ref_w, rate_control_force
     global mode_change_flag, rate_control_force, rad_x, rad_y, rad_z, goal_pub, data_record, global_cart, cartesian_init_pose
+    global iiwa_p_new,iiwa_q_new
     rospy.init_node('iiwa_control')
 
     rospy.Subscriber('/iiwa/state/CartesianPose_end', PoseStamped,
@@ -616,52 +589,14 @@ def main():
         #     break
     rate.sleep()
     while not rospy.is_shutdown():
-        # if data_flag:
-        #     pose_x = cartesian_pose.position.x + diff_x
-        #     pose_y = cartesian_pose.position.y + diff_y
-        #     pose_z = cartesian_pose.position.z + diff_z
-        #     data_flag = False
-        # print(f'error is {cartesian_pose_2.poseStamped.pose.position.z-cartesian_pose.poseStamped.pose.position.z}')
-
-        # print('mode_change_flag:',mode_change_flag)
 
         if joint_flag and buttons_flag and not mode_change_flag:
-            # start=rospy.get_time()
-            # print(cartesian_pose)
-            # print('-----------------------------')
-
-            iiwa_x = cartesian_init_pose.pose.position.x
-            iiwa_y = cartesian_init_pose.pose.position.y
-            iiwa_z = cartesian_init_pose.pose.position.z
-
-            iiwa_ox = cartesian_init_pose.pose.orientation.x
-            iiwa_oy = cartesian_init_pose.pose.orientation.y
-            iiwa_oz = cartesian_init_pose.pose.orientation.z
-            iiwa_ow = cartesian_init_pose.pose.orientation.w
-            # print(f'pose:{cartesian_init_pose}')
-
-            iiwa_q = R.from_quat([iiwa_ox, iiwa_oy, iiwa_oz, iiwa_ow])
-
-            iiwa_r = iiwa_q.as_matrix()
-
-            iiwa_p = [iiwa_x,iiwa_y,iiwa_z]
-
-
-            iiwa_r_new = sigma_r @ iiwa_r  
-
-            iiwa_p_diff = [-diff_x,-diff_y,diff_z]
-
-            iiwa_p_new = [iiwa_p[0]+iiwa_p_diff[0],iiwa_p[1]+iiwa_p_diff[1],iiwa_p[2]+iiwa_p_diff[2]]
-
-            iiwa_q_new = R.from_matrix(iiwa_r_new).as_quat()
-
+            
             cartesian_msg = PoseStamped()
             cartesian_msg.pose.position.x = iiwa_p_new[0]
             cartesian_msg.pose.position.y = iiwa_p_new[1]
             cartesian_msg.pose.position.z = iiwa_p_new[2]
-            # q1 = Quaternion(cartesian_init_pose.orientation.w,cartesian_init_pose.orientation.x,cartesian_init_pose.orientation.y,cartesian_init_pose.orientation.z)
-            #
-            # q_new = q0*q1
+            
             cartesian_msg.pose.orientation.x = iiwa_q_new[0]
             cartesian_msg.pose.orientation.y = iiwa_q_new[1]
             cartesian_msg.pose.orientation.z = iiwa_q_new[2]
@@ -671,21 +606,12 @@ def main():
             cartesian_msg.header.stamp = rospy.Time.now()
             global_cart = cartesian_msg
 
-            # print(cartesian_msg)
-
             cartesian_pub.publish(cartesian_msg)
 
-            # force_pub.publish(rate_control_force)
-            force_pub.publish(training_force)
+            # force_pub.publish(training_force)
             data_record.record_x_s(cartesian_msg)
             data_record.record_x_m(sigma_pose)
             data_record.record_x_s_abs(global_cart)
-
-            # end=rospy.get_time()
-            # print("duration:",(end-start)*1000)
-            # print(rate_control_force)
-
-            # print(f'pose:{cartesian_msg}')
 
         else:
             cartesian_init_pose = cartesian_pose

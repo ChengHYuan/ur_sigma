@@ -137,7 +137,11 @@ class PoseAdaptive():
             goal_vector_plus=goal_vector
         velocity_dim2=velocity[0:2]
         # print(velocity)
-        v_vector=np.dot(velocity_dim2,goal_vector_plus)/np.linalg.norm(goal_vector_plus)
+        
+        goal_vector_norm=goal_vector_plus/np.linalg.norm(goal_vector_plus)
+        
+        v_vector=np.dot(velocity_dim2,goal_vector_norm)*goal_vector_norm
+        
         
         # matrix1 = R.from_quat(qua_now).as_matrix()
         # matrix2 = R.from_quat(qua_goal).as_matrix()
@@ -154,21 +158,26 @@ class PoseAdaptive():
         
         # print("rotvec",np.linalg.norm(rotvec))
         
+        # print("theta: ",np.linalg.norm(rotvec))
+        
         if np.linalg.norm(rotvec)>math.pi:
             print("------------------------------------------")
             rotvec = -rotvec * (2*math.pi / np.linalg.norm(rotvec))
 
-        k=np.linalg.norm(v_vector)*time_step*10/np.linalg.norm(goal_vector_plus)
+        k=np.linalg.norm(v_vector)*time_step*1.0/np.linalg.norm(goal_vector_plus)
+        # k=v_vector[0]*time_step*1.0/goal_vector_plus[0]
+        
         
         # print(k)
         
         # 根据给定的系数进行旋转
         rotated_rotvec = k * rotvec
-        rotated_rotation=  R.from_rotvec(rotated_rotvec)
+        next_pose=  R.from_rotvec(rotated_rotvec)
+        
         # 获取旋转后的旋转矩阵
-        rotated_matrix = np.dot(rotated_rotation.as_matrix(), matrix1)
-        # if goal!=4:
-            # print("goal quat: ",R.from_matrix(matrix2).as_quat())
+        rotated_matrix = np.dot(next_pose.as_matrix(), matrix1)
+        
+        print("qua1: ",R.from_matrix(rotated_matrix).as_quat())
         
         rot_init=R.from_quat([self.cartesian_init_pose.pose.orientation.x,
                               self.cartesian_init_pose.pose.orientation.y,
@@ -178,6 +187,7 @@ class PoseAdaptive():
         rot_change=np.dot(rotated_matrix,rot_init.T)
         
         # print(goal)
+        print("rot change: ",R.from_matrix(rot_change).as_quat())
 
         return R.from_matrix(rot_change).as_quat()
     

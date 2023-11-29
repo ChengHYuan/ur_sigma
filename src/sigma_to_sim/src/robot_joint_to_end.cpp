@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     geometry_msgs::PoseStamped msg;
     Printer pri;
 
-    ros::Rate rate(250);
+    ros::Rate rate(90);
     // int itr_step = 0;
 
     Vector end_position(0.702, 0, 0.08);

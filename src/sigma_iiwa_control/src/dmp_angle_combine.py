@@ -311,7 +311,9 @@ class DMPInter():
     def next_pose(self,time_step,qua_now,qua_goal,velocity,goal):
         goal_vector=self.goal_position[goal]-self.position_now
         
-        v_vector=np.dot(velocity,goal_vector)/np.linalg.norm(goal_vector)
+        # v_vector=np.dot(velocity,goal_vector)/np.linalg.norm(goal_vector)#有问题
+        goal_vector_norm=goal_vector/np.linalg.norm(goal_vector)
+        v_vector=np.dot(velocity,goal_vector_norm)*goal_vector_norm
         
         # matrix1 = R.from_quat(qua_now).as_matrix()
         # matrix2 = R.from_quat(qua_goal).as_matrix()
@@ -332,9 +334,9 @@ class DMPInter():
             print("------------------------------------------")
             rotvec = -rotvec * (2*math.pi / np.linalg.norm(rotvec))
 
-        k=(1.0-np.linalg.norm(v_vector)*time_step/np.linalg.norm(goal_vector))*0.04
+        # k=(1.0-np.linalg.norm(v_vector)*time_step/np.linalg.norm(goal_vector))*0.04
         
-        # k=np.linalg.norm(v_vector)*time_step/np.linalg.norm(goal_vector)*2
+        k=np.linalg.norm(v_vector)*time_step/np.linalg.norm(goal_vector)*2
         # k=0.09
         print(k)
         
