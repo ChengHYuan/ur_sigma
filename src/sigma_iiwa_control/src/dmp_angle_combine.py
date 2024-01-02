@@ -68,6 +68,9 @@ class DMPInter():
             goals_euler[i][0] = data[0]
             goals_euler[i][1] = data[1]
             goals_euler[i][2] = data[2]
+            print(data)
+            print("quat: ",R.from_euler('zyx',data).as_quat())
+            print("-------------------------------")
             
         data0 = self.apply_transform(self.start_angle[0], self.start_angle[1])
         self.start_euler[0][0] = data0[0]
@@ -398,6 +401,7 @@ class DMPInter():
             z=0.09
             
             rotation_matrix = R.from_euler('zyx', self.goals_euler[m], degrees=False).as_matrix()
+            print("rotation: ",rotation_matrix)
             v_x=np.array([rotation_matrix[0][0],rotation_matrix[1][0],rotation_matrix[2][0]])
             v_y=np.array([rotation_matrix[0][1],rotation_matrix[1][1],rotation_matrix[2][1]])
             v_z=np.array([rotation_matrix[0][2],rotation_matrix[1][2],rotation_matrix[2][2]])
@@ -438,6 +442,7 @@ def main():
     #                    [7, 8, 9, 0.7, 0.8, 0.9]])
     
     m_DMP.goals_euler=m_DMP.from_angle_to_euler()
+
     
     # start=m_DMP.goal_position[0]
     start=[0.643,0.058]

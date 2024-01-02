@@ -184,7 +184,7 @@ void Epos4Control::callback_vel(const std_msgs::Float32MultiArray& msg) {
 }
 
 void Epos4Control::test_for_motor(int step, int step_num) {//测试每一个电机是哪一个
-    int num = 0;
+    int num = 3;
 
     m_msg_sent->states[num].position = M_PI / 24 * sin(10 * step * M_PI / step_num);
     // m_msg_sent->states[num].position = M_PI/12;

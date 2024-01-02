@@ -26,7 +26,7 @@ class Detection(object) :
             self.goal_flag=False
         
         # 判断是否接近起点
-        if np.sqrt(np.sum(((self.x_d[0:2]-self.start_point)**2)))<0.01:
+        if np.sqrt(np.sum(((self.x_d[0:2]-self.start_point)**2)))<0.005:
             self.start_flag=True
         else:
             self.start_flag=False

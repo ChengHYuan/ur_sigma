@@ -145,13 +145,13 @@ class PositionRate:
     def get_xsd(self):
         self.get_k_distance()
         # print(self.x_center)
-        if self.k_distance>0.8:
+        if self.k_distance>0.92:
             self.close_flag=False
         # self.x_center_berth()
         self.get_radius_rate()
         # print("k_distance: ",self.k_distance)
         
-        if self.k_distance>0.8:
+        if self.k_distance>0.92:
             if np.sqrt(np.sum((self.x_local-self.x_center)**2)) > self.r_fade_rate*self.radius:  # 速度模式
                 if self.velocity_mode == False:
                     self.velocity_mode = True
@@ -347,6 +347,9 @@ class PositionRate:
         k_start=0.8/(1.0+math.exp(-distance_start*scale+4.0))+0.2
         #当处于起始点和目标点时相同待遇
         self.k_distance = k_goal*k_start
+        
+        if self.k_distance>0.95:
+            print("distance goal: ",distance_goal)
         
         self.record3(self.k_distance,self.file3)
         # print('distance k :%f'%self.k_distance)

@@ -39,7 +39,7 @@ SurgicalRobotUR::SurgicalRobotUR() {
     ur10e_chain.addSegment(Segment("ur10e_link_6", Joint(Joint::RotZ), Frame::DH(0, -M_PI / 2, 0.22832, 0)));
     ur10e_chain.addSegment(Segment("endowrist_link1", Joint(Joint::RotZ), Frame::DH(0, -M_PI / 2, 0.44711, 0)));
     ur10e_chain.addSegment(Segment("endowrist_link2", Joint(Joint::RotZ), Frame::DH(0.013, M_PI / 2, 0, 0)));
-    ur10e_chain.addSegment(Segment("endowrist_link3", Joint(Joint::RotZ), Frame::DH(0.025, 0, 0, 0)));
+    ur10e_chain.addSegment(Segment("endowrist_link3", Joint(Joint::RotZ), Frame::DH(0.020, 0, 0, 0)));
     this->ur10e_tree;
     ur10e_tree = Tree("ur10e_link_0");
     ur10e_tree.addChain(ur10e_chain, "ur10e_link_0");

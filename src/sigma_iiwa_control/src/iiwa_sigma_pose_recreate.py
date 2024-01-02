@@ -560,14 +560,24 @@ def main():
     # rospy.Subscriber('/iiwa/state/CartesianPose_2', CartesianPose,
     #                  callback=cartesian_pose_callback, queue_size=1)
     # rospy.Subscriber('/iiwa/state/CartesianPose', CartesianPose, callback=cartesian_pose_callback_2, queue_size=10)
+    
+    while not rospy.is_shutdown():
+        if cartesian_pose != 0:
+            cartesian_init_pose = cartesian_pose
+            # print(f'pose:{cartesian_pose}')
+            break
+        # if sigma_flag and joint_flag:
+        #     data_flag = True
+        #     break
+        
     rospy.Subscriber('/sigma7/sigma0/pose', PoseStamped,
                      callback=pose_callback, queue_size=1)
-    rospy.Subscriber('/sigma7/sigma0/buttons', Joy,
-                     callback=buttons_callback, queue_size=1)
+    # rospy.Subscriber('/sigma7/sigma0/buttons', Joy,
+    #                  callback=buttons_callback, queue_size=1)
     rospy.Subscriber('/trajectory', Path, callback=path_callback, queue_size=1)
     rospy.Subscriber('/sigma7/sigma0/twist', TwistStamped,
                      callback=twist_callback, queue_size=1)
-    # rospy.Subscriber('/pedal/buttons', Joy, callback=buttons_callback, queue_size=1)
+    rospy.Subscriber('/pedal/buttons', Joy, callback=buttons_callback, queue_size=1)
     # rospy.spin()
 
     # joint_pub = rospy.Publisher('/iiwa/command/JointPosition', JointPosition, queue_size=10)
@@ -579,14 +589,7 @@ def main():
     goal_pub = rospy.Publisher('goal', Float32MultiArray, queue_size=1)
 
     rate = rospy.Rate(200)
-    while not rospy.is_shutdown():
-        if cartesian_pose != 0:
-            cartesian_init_pose = cartesian_pose
-            # print(f'pose:{cartesian_pose}')
-            break
-        # if sigma_flag and joint_flag:
-        #     data_flag = True
-        #     break
+   
     rate.sleep()
     while not rospy.is_shutdown():
 
@@ -608,7 +611,7 @@ def main():
 
             cartesian_pub.publish(cartesian_msg)
 
-            # force_pub.publish(training_force)
+            force_pub.publish(training_force)
             data_record.record_x_s(cartesian_msg)
             data_record.record_x_m(sigma_pose)
             data_record.record_x_s_abs(global_cart)

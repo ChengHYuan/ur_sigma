@@ -157,17 +157,21 @@ class PoseAdaptive():
         rotvec = rotation.as_rotvec()
         
         # print("rotvec",np.linalg.norm(rotvec))
-        
-        # print("theta: ",np.linalg.norm(rotvec))
+        # if goal!=4:
+        #     print("theta: ",np.linalg.norm(rotvec))
+        #     print("goal: ",goal)
+        #     print("goal euler: ",self.goals_euler[goal])
+        #     print("local euler: ",qua_now)
+        #     print("------------------------------")
         
         if np.linalg.norm(rotvec)>math.pi:
             print("------------------------------------------")
             rotvec = -rotvec * (2*math.pi / np.linalg.norm(rotvec))
 
-        k=np.linalg.norm(v_vector)*time_step*1.0/np.linalg.norm(goal_vector_plus)
+        k=np.linalg.norm(v_vector)*time_step*2.0/np.linalg.norm(goal_vector_plus)
         # k=v_vector[0]*time_step*1.0/goal_vector_plus[0]
         
-        
+
         # print(k)
         
         # 根据给定的系数进行旋转
@@ -177,7 +181,7 @@ class PoseAdaptive():
         # 获取旋转后的旋转矩阵
         rotated_matrix = np.dot(next_pose.as_matrix(), matrix1)
         
-        print("qua1: ",R.from_matrix(rotated_matrix).as_quat())
+        # print("qua1: ",R.from_matrix(rotated_matrix).as_quat())
         
         rot_init=R.from_quat([self.cartesian_init_pose.pose.orientation.x,
                               self.cartesian_init_pose.pose.orientation.y,
@@ -187,11 +191,6 @@ class PoseAdaptive():
         rot_change=np.dot(rotated_matrix,rot_init.T)
         
         # print(goal)
-        print("rot change: ",R.from_matrix(rot_change).as_quat())
+        # print("rot change: ",R.from_matrix(rot_change).as_quat())
 
-        return R.from_matrix(rot_change).as_quat()
-    
-    
-    
-    
-    
+        return R.from_matrix(rot_change).as_quat() 
