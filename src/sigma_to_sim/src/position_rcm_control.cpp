@@ -61,7 +61,7 @@ int get_matrix_rank(Eigen::MatrixXd &A) {
 }
 
 //求矩阵伪逆
-template<typename _Matrix_Type_> 
+template<typename _Matrix_Type_>
 _Matrix_Type_ pseudoInverse(const _Matrix_Type_ &a, double epsilon = std::numeric_limits<double>::epsilon()) 
 {  
     Eigen::JacobiSVD< _Matrix_Type_ > svd(a ,Eigen::ComputeThinU | Eigen::ComputeThinV);  
@@ -164,7 +164,6 @@ void Twist_to_Eigen(Twist& t, Eigen::Matrix<double, 6, 1>& m) {
     m(4) = t.rot.data[1];
     m(5) = t.rot.data[2];
 }
-
 
 //求RCM矩阵伪逆(行满秩,右伪逆)
 Eigen::Matrix<double, 11, 3> pseudoInverse_RCM(Eigen::Matrix<double, 3, 11>& A) {
