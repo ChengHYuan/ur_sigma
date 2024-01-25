@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(sigma_to_sim)
 
+
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -135,6 +136,7 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+
 )
 
 ## Declare a C++ library
@@ -226,6 +228,7 @@ include_directories(
 add_executable(position_rcm_control src/position_rcm_control.cpp)
 add_executable(position_rcm_control_sim src/position_rcm_control_sim.cpp)
 add_executable(robot_joint_to_end src/robot_joint_to_end.cpp)
+add_executable(m_ga src/m_ga.cpp)
 # add_executable(joint_pub_action_server_test src/joint_pub_action_server_test.cpp)
 # add_executable(joint_spline_pub src/joint_spline_pub.cpp)
 
@@ -235,5 +238,6 @@ target_link_libraries(position_rcm_control ${kdl_parser_LIBRARIES} ${orocos_kdl_
 target_link_libraries(position_rcm_control_sim ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES} )
 # target_link_libraries(joint_pub_action_server_test ${catkin_LIBRARIES} )
 # target_link_libraries(joint_spline_pub ${catkin_LIBRARIES} )
+target_link_libraries(m_ga ${catkin_LIBRARIES} ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
 

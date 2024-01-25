@@ -3,31 +3,97 @@
 #include <vector>
 #include "printer.hpp"
 #include <fstream>
+#include <random>
+#include <algorithm>
+#include "robot_kin_solver.hpp"
+
+
 
 using namespace std;
-class InvertOpti {
+class InsertOpti {
 public:
-    SurgicalRobotUR* m_ur;
-    vector<vector<double>> m_invert_points;
+    SurRobotKinUR* m_RL;//机器人左手
+    SurRobotKinUR* m_RR;//机器人右手
+    SurRobotKinUR* m_RE;//机器人腹腔镜
+    
+    vector<vector<double>> m_invert_points;//插入点阵列
+    vector<Frame>m_space_points;//空间点阵列
 
+    KDL::Frame baseL;
+    KDL::Frame baseR;
+    KDL::Frame baseE;
     
 
+    int num_space;//参与遍历的空间中点的数量
+
+    int num_joint;
+    int SIZE;
+
+    vector<double> joint_limit;
+
+    vector<double> reach_params;
+    vector<double> orient_params;
+    vector<double> joint_lim_params;
+
+    
     //初始化
-    InvertOpti();
+    InsertOpti();
     
     //读取文件并记录所有离散插入点的位置
     void read_insert_points(const std::string& filename);
-    void printPoints();
+    void read_space_pose(const std::string& filename);
+    void printPoints(vector<vector<double>> &vec);
 
     //根据插入点、工作空间计算几个指标
+    double get_reach_param();//位置灵巧性l
+    double get_orient_param();//姿态灵巧性l
+    double get_joint_lim_param(JntArray& joints);//关节角限制参数
+    double get_symmetry_param(vector<double>rcm_l, vector<double>rcm_r, vector<double>rcm_e);//对称性参数
+    double get_distances_param(vector<double>rcm_l, vector<double>rcm_r, vector<double>rcm_e);//插入点距离参数
 
-    //逆运动学计算
-    void inverse_kin();
+    double get_Unit(const vector<int> & individual);//综合参数
+    void get_all_param_independent();//实验之前计算所有的与插入点无关的参数
 
+    //评估参数的优劣,返回带权重的参数
+    double judge_reach_param(double &reach);
+    double judge_orient_param(double &orient);
+    double judge_joint_lim_param(double &lim);
+    double judge_symmetry_param(double &symmetry);
+    double judge_distances_param(double &dis);
+    
 
 };
 
-void InvertOpti::read_insert_points(const string& filename) {
+////////////////////////////////
+/*                           ///
+                             ///
+构造函数   
+                             ///
+*/                           ///
+////////////////////////////////
+InsertOpti::InsertOpti() {
+    m_RL = new SurRobotKinUR();
+    m_RR = new SurRobotKinUR();
+    m_RE = new SurRobotKinUR();
+
+
+    read_insert_points("data1.txt");
+    read_space_pose("data2.txt");
+
+    num_joint = 9;
+    
+    SIZE = m_invert_points.size();
+    
+    reach_params.resize(SIZE);
+    orient_params.resize(SIZE);
+    joint_lim_params.resize(SIZE);
+
+    Eigen::MatrixXd j_RCM(3, 10), j_TIP(6, 9);
+    joint_limit = { 360,   360,    360,    360,    360,    360,    360, 80, 80 };
+}
+
+//读取插入点
+void InsertOpti::read_insert_points(const string& filename) {
     ifstream file(filename);
         if (!file) {
             cerr << "无法打开文件" << endl;
@@ -38,9 +104,12 @@ void InvertOpti::read_insert_points(const string& filename) {
         while (getline(file, line)) {
             istringstream iss(line);
             vector<double> point;
-            double num;
-            while (iss >> num) {
-                point.push_back(num);
+            string value;
+            while (iss >> value) {
+                if (isdigit(value[0])) {
+                    double num = stod(value);
+                    point.push_back(num);
+                }
             }
             m_invert_points.push_back(point);
         }
@@ -48,9 +117,38 @@ void InvertOpti::read_insert_points(const string& filename) {
     
 }
 
-void InvertOpti::printPoints() {
+//读取空间点
+void InsertOpti::read_space_pose(const string& filename) {
+    ifstream file(filename);
+        if (!file) {
+            cerr << "无法打开文件" << endl;
+            return;
+        }
+        
+        string line;
+        while (getline(file, line)) {
+            istringstream iss(line);
+            vector<double> point;
+            string value;
+            while (iss >> value) {
+                if (isdigit(value[0])) {
+                    double num = stod(value);
+                    point.push_back(num);
+                }
+            }
+
+            Vector position(point[0], point[1], point[2]);
+            Rotation orientation = Rotation::Quaternion(point[6], point[3], point[4], point[5]);
+            Frame frame(orientation, position);
+            m_space_points.push_back(frame);
+        }
+        file.close();
+}
+
+//打印插入点
+void InsertOpti::printPoints(vector<vector<double>> &vec) {
         cout << "导入的点的内容：" << endl;
-        for (const auto& point : m_invert_points) {
+        for (const auto& point : vec) {
             for (int num : point) {
                 cout << num << " ";
             }
@@ -59,69 +157,172 @@ void InvertOpti::printPoints() {
     }
 
 
-    int numSegmentsX = length / segmentSize;
-    int numSegmentsY = width / segmentSize;
-    int numSegmentsZ = height / segmentSize;
+//计算单次空间点的关节角参数
+double InsertOpti::get_joint_lim_param(JntArray& joints) {
+    double f_theta;
+    double lim_param = 0;
+    for (int i = 0;i < num_joint;++i) {
+        f_theta = (joints.data(i)) * (joints.data(i)) / (joint_limit[i] * joint_limit[i]);
+        lim_param += f_theta;
+    }
+    return lim_param / num_joint;
+}
 
-    double startX = center[0] - (numSegmentsX * segmentSize) / 2.0;
-    double startY = center[1] - (numSegmentsY * segmentSize) / 2.0;
-    double startZ = center[2] - (numSegmentsZ * segmentSize) / 2.0;
+//计算对称参数
+double InsertOpti::get_symmetry_param(vector<double>rcm_l, vector<double>rcm_r, vector<double>rcm_e) {//越小越好
+    double el = sqrt((rcm_l[0] - rcm_e[0]) * (rcm_l[0] - rcm_e[0]) + (rcm_l[1] - rcm_e[1]) * (rcm_l[1] - rcm_e[1]) + (rcm_l[2] - rcm_e[2]) * (rcm_l[2] - rcm_e[2]));
+    double er = sqrt((rcm_r[0] - rcm_e[0]) * (rcm_r[0] - rcm_e[0]) + (rcm_r[1] - rcm_e[1]) * (rcm_r[1] - rcm_e[1]) + (rcm_r[2] - rcm_e[2]) * (rcm_r[2] - rcm_e[2]));
+    return (el - er) * (el - er);
+}
+//计算插入点距离参数（不能太近）
+double InsertOpti::get_distances_param(vector<double>rcm_l, vector<double>rcm_r, vector<double>rcm_e) {
+    double min_distance=0.03;
+    double el = sqrt((rcm_l[0] - rcm_e[0]) * (rcm_l[0] - rcm_e[0]) + (rcm_l[1] - rcm_e[1]) * (rcm_l[1] - rcm_e[1]) + (rcm_l[2] - rcm_e[2]) * (rcm_l[2] - rcm_e[2]));
+    double er = sqrt((rcm_r[0] - rcm_e[0]) * (rcm_r[0] - rcm_e[0]) + (rcm_r[1] - rcm_e[1]) * (rcm_r[1] - rcm_e[1]) + (rcm_r[2] - rcm_e[2]) * (rcm_r[2] - rcm_e[2]));
+    double lr = sqrt((rcm_r[0] - rcm_l[0]) * (rcm_r[0] - rcm_l[0]) + (rcm_r[1] - rcm_l[1]) * (rcm_r[1] - rcm_l[1]) + (rcm_r[2] - rcm_l[2]) * (rcm_r[2] - rcm_l[2]));
+    return 2*min_distance / (el)+2*min_distance / (er)+2*min_distance / (lr);
+}
 
-    for (int i = 0; i < numSegmentsX; i++) {
-        for (int j = 0; j < numSegmentsY; j++) {
-            for (int k = 0; k < numSegmentsZ; k++) {
-                vector<double> vertices(3);
-                vertices[0] = startX + (i * segmentSize) + (segmentSize / 2.0);
-                vertices[1] = startY + (j * segmentSize) + (segmentSize / 2.0);
-                vertices[2] = startZ + (k * segmentSize) + (segmentSize / 2.0);
-                boxVertices.push_back(vertices);
-            }
+
+//可以利用左右手等价的原理，在开始遗传算法之前就把所有的与空间相关的参数全部计算完
+double InsertOpti::get_reach_param() {
+    
+}
+
+double InsertOpti::get_orient_param() {
+    
+}
+
+//评估参数的优劣,返回带权重的参数
+double InsertOpti::judge_reach_param(double& reach) {
+    double result = 0.0;
+    double value = reach;
+    if (value <= 10.0) {
+        result = value * 1.0; // 理想
+    } else if (value <= 100.0) {
+        result = value * 10.0; // 可接受
+    } else {
+        result = value * 100.0; // 不可接受
+    }
+
+    return result;
+}
+
+double InsertOpti::judge_orient_param(double& orient) {
+    double result = 0.0;
+    double value = orient;
+    if (value <= 10.0) {
+        result = value * 1.0; // 理想
+    } else if (value <= 100.0) {
+        result = value * 10.0; // 可接受
+    } else {
+        result = value * 100.0; // 不可接受
+    }
+
+    return result;
+}
+
+double InsertOpti::judge_joint_lim_param(double& lim) {
+    double result = 0.0;
+    double value = lim;
+    if (value <= 10.0) {
+        result = value * 1.0; // 理想
+    } else if (value <= 100.0) {
+        result = value * 10.0; // 可接受
+    } else {
+        result = value * 100.0; // 不可接受
+    }
+
+    return result;
+}
+
+double InsertOpti::judge_symmetry_param(double& symmetry) {
+    double result = 0.0;
+    double value = symmetry;
+    if (value <= 10.0) {
+        result = value * 1.0; // 理想
+    } else if (value <= 100.0) {
+        result = value * 10.0; // 可接受
+    } else {
+        result = value * 100.0; // 不可接受
+    }
+
+    return result;
+}
+
+double InsertOpti::judge_distances_param(double& dis) {
+    double result = 0.0;
+    double value = dis;
+    if (value <= 10.0) {
+        result = value * 1.0; // 理想
+    } else if (value <= 100.0) {
+        result = value * 10.0; // 可接受
+    } else {
+        result = value * 100.0; // 不可接受
+    }
+
+    return result;
+}
+
+void InsertOpti::get_all_param_independent() {
+    JntArray joints_now(9);
+    //遍历所有插入点
+
+    for (int i = 0;i < m_invert_points.size(); ++i) {
+        Vector p_rcm(m_invert_points[i][0], m_invert_points[i][1], m_invert_points[i][2]);
+        double reach_param = 0.0;
+        double orient_param = 0.0;
+        double joint_lim_param = 0.0;
+        //遍历所有空间点
+        for (int j = 0;j < m_space_points.size();++j) {
+            //计算各个指标
+
+            Frame frame_now = m_space_points[j];
+            m_RL->inverse_kin(frame_now, joints_now, p_rcm);
+
+            reach_param += get_reach_param();
+            orient_param += get_orient_param();
+            joint_lim_param += get_joint_lim_param(joints_now);
+            //各个单个指标求和
         }
+        reach_param = reach_param / num_space;
+        orient_param = orient_param / num_space;
+        joint_lim_param = joint_lim_param / num_space;
+
+        reach_params[i] = reach_param;
+        orient_params[i] = orient_param;
+        joint_lim_params[i] = joint_lim_param;
     }
 
 }
 
+double InsertOpti::get_Unit(const vector<int> & individual) {
 
-    
-    Eigen::MatrixXd j_RCM(3, 10), j_FULL(9, 10);
-    
-    Vector p_RCM;
-    Eigen::MatrixXd error_RCM(3, 1), error_FULL(9, 1), null_motion(10, 1);
-    null_motion << 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0;//零空间运动初始值
-    
-    Eigen::MatrixXd q_delta_DOUBLE_up(10, 1),q_delta_DOUBLE_down(10, 1),q_delta_DOUBLE(10,1),q_NULL(10,1);
-
-    
-
-    robot_fk_solver.JntToCart(q_origin, frame_t);
-    robot_fk_solver.JntToCart(q_origin, frame_7, 6);
-    robot_fk_solver.JntToCart(q_origin, frame_8, 7);
-    // pri.print_frame(frame_t);
-    // pri.print_frame(frame_9);
-    
-    Vector p_delta_ii;
-    p_delta_ii = frame_8.p - frame_7.p;
-    // cout << "p_i-p_i+1: " << p_delta_ii.data[0] << " " << p_delta_ii.data[1] << " " << p_delta_ii.data[2] << endl;
-    //获取 第8个关节 第九个关节 雅克比
-    jacSolver.JntToJac(q_origin, jac_7, 6);
-    jacSolver.JntToJac(q_origin, jac_8, 7);
-    jacSolver.JntToJac(q_origin, jaco_t);
-    
-            reach_param_l += get_reach_param_l();
-            orient_param_l += get_orient_param_l();
-            reach_param_r += get_reach_param_r();
-            orient_param_r += get_orient_param_r();
-            joint_lim_param_l += get_joint_lim_param(joints_now);
-            joint_lim_param_r += get_joint_lim_param(joints_now);
-            //各个单个指标求和
-        }
-        reach_param_l = reach_param_l / num_space;
-        orient_param_l = orient_param_l / num_space;
-        reach_param_r = reach_param_r / num_space;
-        orient_param_r = orient_param_r / num_space;
-        joint_lim_param_l += get_joint_lim_param(joints_now);
+    //根据索引获得插入点坐标
+    vector<double> rcm_l = m_invert_points[individual[0]];
+    vector<double> rcm_r = m_invert_points[individual[1]];
+    vector<double> rcm_e = m_invert_points[individual[2]];
 
 
-    
+    //计算当前插入点下的各个参数值，并进行接收
+    double RL = reach_params[individual[0]];
+    double OL = orient_params[individual[0]];
+    double RR = reach_params[individual[1]];
+    double OR = orient_params[individual[0]];
+    double JntLimL = joint_lim_params[individual[0]];
+    double JntLimR = joint_lim_params[individual[1]];
+    double Sym = get_symmetry_param(rcm_l, rcm_r, rcm_e);
+    double Dis = get_distances_param(rcm_l,rcm_r,rcm_e);
+    //给权重，这个权重基于三个档位：理想、可接受、不可接受
+    RL = judge_reach_param(RL);
+    OL = judge_orient_param(OL);
+    RR = judge_reach_param(RR);
+    OR = judge_orient_param(OR);
+    JntLimL = judge_joint_lim_param(JntLimL);
+    JntLimR = judge_joint_lim_param(JntLimR);
+    Sym = judge_symmetry_param(Sym);
+    Dis = judge_distances_param(Dis);
 
-    }
+
+}
+

@@ -17,13 +17,14 @@
                 "/home/chy/sigma_iiwa_simulation/ur_sigma/src/sigma_iiwa_control/include/**",
                 "/home/chy/sigma_iiwa_simulation/ur_sigma/src/sigma_to_sim/include/**",
                 "/usr/include/**",
+                "/usr/local/include/**",
                 "/opt/ros/noetic/include"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu11",
-            "cppStandard": "c++14"
+            "cppStandard": "c++17"
         }
     ],
     "version": 4
