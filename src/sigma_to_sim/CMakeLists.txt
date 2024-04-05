@@ -229,6 +229,7 @@ add_executable(position_rcm_control src/position_rcm_control.cpp)
 add_executable(position_rcm_control_sim src/position_rcm_control_sim.cpp)
 add_executable(robot_joint_to_end src/robot_joint_to_end.cpp)
 add_executable(m_ga src/m_ga.cpp)
+add_executable(with_violent src/with_violent.cpp)
 # add_executable(joint_pub_action_server_test src/joint_pub_action_server_test.cpp)
 # add_executable(joint_spline_pub src/joint_spline_pub.cpp)
 
@@ -239,5 +240,6 @@ target_link_libraries(position_rcm_control_sim ${kdl_parser_LIBRARIES} ${orocos_
 # target_link_libraries(joint_pub_action_server_test ${catkin_LIBRARIES} )
 # target_link_libraries(joint_spline_pub ${catkin_LIBRARIES} )
 target_link_libraries(m_ga ${catkin_LIBRARIES} ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES})
+target_link_libraries(with_violent ${catkin_LIBRARIES} ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
 

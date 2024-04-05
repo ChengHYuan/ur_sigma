@@ -111,7 +111,7 @@ Frame get_new_rcm(Vector& end_position, Eigen::Vector3d& rcm_point, double& pitc
 
 //末端点圆周轨迹测试
 Frame circle_traj(Vector endPosi,int step) {
-    double ratio = 0.02;
+    double ratio = 0.05;
     Vector target_posi(endPosi.x() + ratio * sin(double(step) / 1000 * 2 * M_PI),
                        endPosi.y() + ratio * cos(double(step) / 1000 * 2 * M_PI),
         endPosi.z());
@@ -589,7 +589,7 @@ int main(int argc, char* argv[]){
     int step = 0;
     double flag = 1e-8;
     
-    Vector end_position(0.702, 0, 0.08);
+    Vector end_position(0.702, 0, 0.06);
     
     Frame end_pose(end_position);
     RobotSubPub sub_pub;
@@ -623,9 +623,9 @@ int main(int argc, char* argv[]){
     while (ros::ok())
     {
         double start = ros::Time::now().toSec();
-        // frame_in = circle_traj(end_position, itr_step);
+        frame_in = circle_traj(end_position, itr_step);
         // frame_in = square_traj(end_position, itr_step);
-        frame_in = sub_pub.command_frame;
+        // frame_in = sub_pub.command_frame;
 
         q_in = sub_pub.joints_now;
         

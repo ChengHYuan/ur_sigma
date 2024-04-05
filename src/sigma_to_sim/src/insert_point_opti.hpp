@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "printer.hpp"
+// #include "printer.hpp"
 #include <fstream>
 #include <random>
 #include <algorithm>
@@ -22,7 +22,9 @@ public:
     KDL::Frame baseL;
     KDL::Frame baseR;
     KDL::Frame baseE;
-    
+
+    Printer pri;
+
 
     int num_space;//参与遍历的空间中点的数量
 
@@ -34,6 +36,18 @@ public:
     vector<double> reach_params;
     vector<double> orient_params;
     vector<double> joint_lim_params;
+    
+    
+    double reach_params_down;
+    double reach_params_up;
+    double orient_params_down;
+    double orient_params_up;
+    double joint_limit_down;
+    double joint_limit_up;
+
+    double reach_max;
+    double orient_max;
+
 
     
     //初始化
@@ -59,8 +73,10 @@ public:
     double judge_orient_param(double &orient);
     double judge_joint_lim_param(double &lim);
     double judge_symmetry_param(double &symmetry);
-    double judge_distances_param(double &dis);
-    
+    double judge_distances_param(double& dis);
+
+    void set_key_values();//设置评价节点，把所有插入点的值按照0.3、0.4、0.3进行分割
+
 
 };
 
@@ -77,8 +93,8 @@ InsertOpti::InsertOpti() {
     m_RE = new SurRobotKinUR();
 
 
-    read_insert_points("data1.txt");
-    read_space_pose("data2.txt");
+    read_insert_points("points/sampled_points.txt");
+    read_space_pose("points/space_pose_data.txt");
 
     num_joint = 9;
     
@@ -90,59 +106,67 @@ InsertOpti::InsertOpti() {
 
     Eigen::MatrixXd j_RCM(3, 10), j_TIP(6, 9);
     joint_limit = { 360,   360,    360,    360,    360,    360,    360, 80, 80 };
+    cout << "--------------------机器人初始化已成功---------------------" << endl;
 }
 
 //读取插入点
 void InsertOpti::read_insert_points(const string& filename) {
     ifstream file(filename);
         if (!file) {
-            cerr << "无法打开文件" << endl;
-            return;
+        cerr << "无法打开文件" << endl;
+    }
+    
+    string line;
+    while (getline(file, line)) {
+        istringstream iss(line);
+        vector<double> point;
+        string value;
+        while (getline(iss, value, ',')) { // 以逗号为分隔符
+            double num = stod(value);
+            num = num / 1000.0;
+            point.push_back(num);
         }
-        
-        string line;
-        while (getline(file, line)) {
-            istringstream iss(line);
-            vector<double> point;
-            string value;
-            while (iss >> value) {
-                if (isdigit(value[0])) {
-                    double num = stod(value);
-                    point.push_back(num);
-                }
-            }
+        if (point.size() == 3) { // 确保每个点有三个坐标
+            // std::cout << point[0]<<" "<<point[1]<<" "<<point[2] << std::endl;
             m_invert_points.push_back(point);
+        } else {
+            cerr << "错误：每个点应该有三个坐标" << endl;
         }
-        file.close();
+    }
+    file.close();
+    
     
 }
 
 //读取空间点
 void InsertOpti::read_space_pose(const string& filename) {
     ifstream file(filename);
-        if (!file) {
-            cerr << "无法打开文件" << endl;
-            return;
-        }
-        
-        string line;
-        while (getline(file, line)) {
-            istringstream iss(line);
-            vector<double> point;
-            string value;
-            while (iss >> value) {
-                if (isdigit(value[0])) {
-                    double num = stod(value);
-                    point.push_back(num);
-                }
-            }
+    if (!file) {
+        cerr << "无法打开文件" << endl;
+        return;
+    }
 
-            Vector position(point[0], point[1], point[2]);
-            Rotation orientation = Rotation::Quaternion(point[6], point[3], point[4], point[5]);
-            Frame frame(orientation, position);
-            m_space_points.push_back(frame);
+    string line;
+    while (getline(file, line)) {
+        istringstream iss(line);
+        vector<double> point;
+        string value;
+
+        while (std::getline(iss, value, ',')) {
+            double num = std::stod(value);
+            point.push_back(num);
         }
-        file.close();
+        Vector position(point[0], point[1], point[2]);
+        Rotation orientation = Rotation::Quaternion(point[6], point[3], point[4], point[5]);
+        Frame frame(orientation, position);
+        m_space_points.push_back(frame);
+    }
+    num_space = m_space_points.size();
+
+    file.close();
+
+    
+
 }
 
 //打印插入点
@@ -160,11 +184,13 @@ void InsertOpti::printPoints(vector<vector<double>> &vec) {
 //计算单次空间点的关节角参数
 double InsertOpti::get_joint_lim_param(JntArray& joints) {
     double f_theta;
-    double lim_param = 0;
+    double lim_param = 0.0;
     for (int i = 0;i < num_joint;++i) {
-        f_theta = (joints.data(i)) * (joints.data(i)) / (joint_limit[i] * joint_limit[i]);
+        f_theta = (joints.data(i) * joints.data(i) * 180.0 * 180.0) / (joint_limit[i] * joint_limit[i] * M_PI * M_PI);
+        // cout << f_theta << endl;
         lim_param += f_theta;
     }
+    // cout << lim_param / num_joint << endl;
     return lim_param / num_joint;
 }
 
@@ -172,15 +198,17 @@ double InsertOpti::get_joint_lim_param(JntArray& joints) {
 double InsertOpti::get_symmetry_param(vector<double>rcm_l, vector<double>rcm_r, vector<double>rcm_e) {//越小越好
     double el = sqrt((rcm_l[0] - rcm_e[0]) * (rcm_l[0] - rcm_e[0]) + (rcm_l[1] - rcm_e[1]) * (rcm_l[1] - rcm_e[1]) + (rcm_l[2] - rcm_e[2]) * (rcm_l[2] - rcm_e[2]));
     double er = sqrt((rcm_r[0] - rcm_e[0]) * (rcm_r[0] - rcm_e[0]) + (rcm_r[1] - rcm_e[1]) * (rcm_r[1] - rcm_e[1]) + (rcm_r[2] - rcm_e[2]) * (rcm_r[2] - rcm_e[2]));
+    // cout << (el - er) * (el - er) << endl;
     return (el - er) * (el - er);
 }
 //计算插入点距离参数（不能太近）
 double InsertOpti::get_distances_param(vector<double>rcm_l, vector<double>rcm_r, vector<double>rcm_e) {
-    double min_distance=0.03;
+    // double min_distance=0.03;
     double el = sqrt((rcm_l[0] - rcm_e[0]) * (rcm_l[0] - rcm_e[0]) + (rcm_l[1] - rcm_e[1]) * (rcm_l[1] - rcm_e[1]) + (rcm_l[2] - rcm_e[2]) * (rcm_l[2] - rcm_e[2]));
     double er = sqrt((rcm_r[0] - rcm_e[0]) * (rcm_r[0] - rcm_e[0]) + (rcm_r[1] - rcm_e[1]) * (rcm_r[1] - rcm_e[1]) + (rcm_r[2] - rcm_e[2]) * (rcm_r[2] - rcm_e[2]));
     double lr = sqrt((rcm_r[0] - rcm_l[0]) * (rcm_r[0] - rcm_l[0]) + (rcm_r[1] - rcm_l[1]) * (rcm_r[1] - rcm_l[1]) + (rcm_r[2] - rcm_l[2]) * (rcm_r[2] - rcm_l[2]));
-    return 2*min_distance / (el)+2*min_distance / (er)+2*min_distance / (lr);
+    // cout <<  2 * min_distance / (el)+2 * min_distance / (er)+2 * min_distance / (lr) << endl;
+    return min({ el,er,lr });
 }
 
 
@@ -193,30 +221,32 @@ double InsertOpti::get_orient_param() {
     
 }
 
+
+//4.64627   4.28654   4.05147   3.70453   0.434357   0.387118
 //评估参数的优劣,返回带权重的参数
 double InsertOpti::judge_reach_param(double& reach) {
     double result = 0.0;
     double value = reach;
-    if (value <= 10.0) {
-        result = value * 1.0; // 理想
-    } else if (value <= 100.0) {
-        result = value * 10.0; // 可接受
+    if (value >= reach_params_up) {
+        result = (reach_max-value) * 1.0; // 理想
+    } else if (value >= reach_params_down) {
+        result = (reach_max - value) * 10.0; // 可接受
     } else {
-        result = value * 100.0; // 不可接受
+        result = (reach_max - value) * 100.0; // 不可接受
     }
-
+    
     return result;
 }
 
 double InsertOpti::judge_orient_param(double& orient) {
     double result = 0.0;
     double value = orient;
-    if (value <= 10.0) {
-        result = value * 1.0; // 理想
-    } else if (value <= 100.0) {
-        result = value * 10.0; // 可接受
+    if (value >= orient_params_up) {
+        result = (orient_max-value) * 1.0; // 理想
+    } else if (value >= orient_params_down) {
+        result = (orient_max-value) * 10.0; // 可接受
     } else {
-        result = value * 100.0; // 不可接受
+        result =(orient_max-value) * 100.0; // 不可接受
     }
 
     return result;
@@ -225,12 +255,12 @@ double InsertOpti::judge_orient_param(double& orient) {
 double InsertOpti::judge_joint_lim_param(double& lim) {
     double result = 0.0;
     double value = lim;
-    if (value <= 10.0) {
-        result = value * 1.0; // 理想
-    } else if (value <= 100.0) {
-        result = value * 10.0; // 可接受
+    if (value <= joint_limit_up) {
+        result = value * 10.0; // 理想
+    } else if (value <= joint_limit_down) {
+        result = value * 100.0; // 可接受
     } else {
-        result = value * 100.0; // 不可接受
+        result = value * 1000.0; // 不可接受
     }
 
     return result;
@@ -239,12 +269,12 @@ double InsertOpti::judge_joint_lim_param(double& lim) {
 double InsertOpti::judge_symmetry_param(double& symmetry) {
     double result = 0.0;
     double value = symmetry;
-    if (value <= 10.0) {
-        result = value * 1.0; // 理想
-    } else if (value <= 100.0) {
-        result = value * 10.0; // 可接受
+    if (value <= 0.025) {
+        result = value * 10.0; // 理想
+    } else if (value <= 0.10) {
+        result = value * 100.0; // 可接受
     } else {
-        result = value * 100.0; // 不可接受
+        result = value * 1000.0; // 不可接受
     }
 
     return result;
@@ -253,21 +283,51 @@ double InsertOpti::judge_symmetry_param(double& symmetry) {
 double InsertOpti::judge_distances_param(double& dis) {
     double result = 0.0;
     double value = dis;
-    if (value <= 10.0) {
-        result = value * 1.0; // 理想
-    } else if (value <= 100.0) {
-        result = value * 10.0; // 可接受
-    } else {
-        result = value * 100.0; // 不可接受
+    if (value >= 0.1) {
+        result = (0.4-value) * 10.0; // 理想
+    }
+    else if (value >= 0.04) {
+        result = (0.4-value) * 100.0; // 可接受
+    }
+    else {
+        result =(0.4-value) * 1000.0; // 不可接受
     }
 
     return result;
 }
 
+
+void InsertOpti::set_key_values() {
+    
+    vector<double> rp = reach_params;
+    vector<double> op = orient_params;
+    vector<double> jp = joint_lim_params;
+    std::sort(rp.begin(), rp.end());//升序
+    std::sort(op.begin(), op.end());
+    std::sort(jp.begin(), jp.end());
+
+    
+
+    int p_size = rp.size();
+    reach_max = rp[p_size - 1];
+    orient_max = op[p_size - 1];
+
+    int p_down = static_cast<int>(floor(p_size * 0.3));
+    int p_up = static_cast<int>(floor(p_size * 0.7));
+
+    reach_params_down = rp[p_down];
+    reach_params_up = rp[p_up];
+    orient_params_down = op[p_down];
+    orient_params_up = op[p_up];
+    joint_limit_down = jp[p_down];
+    joint_limit_up = jp[p_up];
+    
+}
+
 void InsertOpti::get_all_param_independent() {
     JntArray joints_now(9);
     //遍历所有插入点
-
+    joints_now.data << 0.3426676094532013, -1.3702833652496338, -1.940365195274353, -2.97253680229187, -1.2970304489135742, -M_PI,0.06891465932130814+M_PI/2, -M_PI/2, 0.0;
     for (int i = 0;i < m_invert_points.size(); ++i) {
         Vector p_rcm(m_invert_points[i][0], m_invert_points[i][1], m_invert_points[i][2]);
         double reach_param = 0.0;
@@ -278,13 +338,16 @@ void InsertOpti::get_all_param_independent() {
             //计算各个指标
 
             Frame frame_now = m_space_points[j];
+            // pri.print_frame(frame_now);
+
             m_RL->inverse_kin(frame_now, joints_now, p_rcm);
 
-            reach_param += get_reach_param();
-            orient_param += get_orient_param();
+            reach_param += m_RL->k_r;
+            orient_param += m_RL->k_o;
             joint_lim_param += get_joint_lim_param(joints_now);
             //各个单个指标求和
         }
+        cout << "finish for point "<<i <<"!!!!!"<< endl;
         reach_param = reach_param / num_space;
         orient_param = orient_param / num_space;
         joint_lim_param = joint_lim_param / num_space;
@@ -295,6 +358,9 @@ void InsertOpti::get_all_param_independent() {
     }
 
 }
+
+
+
 
 double InsertOpti::get_Unit(const vector<int> & individual) {
 
@@ -323,6 +389,9 @@ double InsertOpti::get_Unit(const vector<int> & individual) {
     Sym = judge_symmetry_param(Sym);
     Dis = judge_distances_param(Dis);
 
+    // cout << RL + OL + RR + OR + JntLimL + JntLimR + Sym + Dis << endl;
+
+    return -(RL + OL + RR + OR + JntLimL + JntLimR + Sym + Dis);
 
 }
 

@@ -5,7 +5,7 @@
 #include <kdl/chainiksolverpos_lma.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
 #include "surgical_robot_pub_sub.hpp"
-// #include "printer.hpp"
+#include "printer.hpp"
 #include <fstream>
 
 using namespace std;
@@ -14,8 +14,10 @@ public:
     SurgicalRobotUR* m_R;//机器人
     Chain robot_chain;//机器人链
     KDL::Frame base;//末端位姿
-    ChainJntToJacSolver *jacSolver;
-    ChainFkSolverPos_recursive *robot_fk_solver;
+    ChainJntToJacSolver* jacSolver;
+    ChainFkSolverPos_recursive* robot_fk_solver;
+
+    Printer pri;
 
 
     double k_r;//可操作性指标，包括位置和姿态
@@ -31,16 +33,17 @@ public:
 public:
 
     SurRobotKinUR();
+    ~SurRobotKinUR();
 
     //速度转化为矩阵
     void Twist_to_Eigen(Twist& t, Eigen::Matrix<double, 6, 1>& m);
     //逆运动学计算
-    void inverse_kin(Frame& frame_in, JntArray& q_in, Vector &p_c);
+    void inverse_kin(Frame& frame_in, JntArray& q_in, Vector& p_c);
     JntArray invOneStep(Frame& frame_t_d, JntArray& q_origin, Vector& p_c, bool& stop_flag, double& lamda, bool& over1_flag);
 
-    double get_lamda(JntArray & q_origin, Vector &p_c);
+    double get_lamda(JntArray& q_origin, Vector& p_c);
     Eigen::Matrix<double, 10, 10>null_space_get(Eigen::MatrixXd& j_full);
-    
+
     template<typename _Matrix_Type_>
     _Matrix_Type_ pseudoInverse(const _Matrix_Type_& a, double epsilon = std::numeric_limits<double>::epsilon());
     Eigen::Matrix<double, 10, 3> pseudoInverse_RCM(Eigen::MatrixXd& A);
@@ -49,7 +52,26 @@ public:
     int get_matrix_rank(Eigen::MatrixXd& A);
 
     //计算可操作性指标
-    vector<double> get_jac_R_O();
+    void get_jac_R_O();
+
+
+    //限制角度在-2pi-2pi
+    double limitAngle(double angle) {
+        angle = fmod(angle, 2 * M_PI);
+        if (angle < -M_PI) {
+            angle += 2 * M_PI;
+        }
+        else if (angle > M_PI) {
+            angle -= 2 * M_PI;
+        }
+        return angle;
+    }
+
+    void limitAngles(JntArray& q_in) {
+        for (int i = 0; i < q_in.rows(); i++) {
+            q_in(i) = limitAngle(q_in(i));
+        }
+    }
 
 };
 
@@ -61,18 +83,28 @@ public:
 */                           ///
 ////////////////////////////////
 SurRobotKinUR::SurRobotKinUR() {
+    
     m_R = new SurgicalRobotUR();
     robot_chain = m_R->ur10e_chain;
 
-    jacSolver=new ChainJntToJacSolver(robot_chain);
+    jacSolver=new ChainJntToJacSolver(m_R->ur10e_chain);
 
-    robot_fk_solver =new ChainFkSolverPos_recursive(*m_R->fwdkin);
+    robot_fk_solver = new ChainFkSolverPos_recursive(*m_R->fwdkin);
 
-
-    Eigen::MatrixXd j_RCM(3, 10), j_TIP(6, 9);
+    j_RCM.resize(3, 10);
+    j_TIP.resize(6, 9);
 
     //逆运动学参数
     k_error.resize(10);
+}
+
+SurRobotKinUR::~SurRobotKinUR() {
+    
+    delete m_R;
+
+    delete jacSolver;
+
+    delete robot_fk_solver;
 }
 
 ////////////////////////////////
@@ -88,21 +120,31 @@ void SurRobotKinUR::inverse_kin(Frame& frame_in, JntArray& q_in, Vector& p_c) {
     bool stop_flag;
     bool over1_flag;
     double lamda = get_lamda(q_in, p_c);
-    while (step < 100) {
-        q_in = invOneStep(frame_in, q_in,p_c,stop_flag, lamda, over1_flag);
+    JntArray q_save = q_in;
+    // cout << "flag0" << endl;
+    while (step < 300) {
+        
+        q_in = invOneStep(frame_in, q_in, p_c, stop_flag, lamda, over1_flag);
+
+        limitAngles(q_in);
 
         if (stop_flag) {
             break;
         }
         step++;
-        if (step == 100) {
-            ROS_INFO("iterate step is out of range");
+        if (step == 200) {
+            // ROS_INFO("iterate step is out of range");
         }
     }
-
+    
     get_jac_R_O();
+    if (step >= 200) {
+        q_in = q_save;
+    }
 
 }
+
+
 
 //速度转化为矩阵
 void SurRobotKinUR::Twist_to_Eigen(Twist& t, Eigen::Matrix<double, 6, 1>& m) {
@@ -209,9 +251,9 @@ JntArray SurRobotKinUR::invOneStep(Frame& frame_t_d, JntArray& q_origin, Vector&
     Frame frame_t;
     Frame frame_7;
     Frame frame_8;
-    Jacobian jac_7;
-    Jacobian jac_8;
-    Jacobian jac_t;
+    Jacobian jac_7(9);
+    Jacobian jac_8(9);
+    Jacobian jac_t(9);
     Eigen::MatrixXd jac_7_double(6, 9), jac_8_double(6, 9);
     Twist error_delta_twist;
     Eigen::Matrix<double, 6, 1> error_delta;
@@ -221,7 +263,7 @@ JntArray SurRobotKinUR::invOneStep(Frame& frame_t_d, JntArray& q_origin, Vector&
     
     Vector p_RCM;
     Eigen::MatrixXd error_RCM(3, 1), error_FULL(9, 1), null_motion(10, 1);
-    null_motion << 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0;//零空间运动初始值
+    null_motion << 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0;//零空间运动初始值
     
     Eigen::MatrixXd q_delta_DOUBLE_up(10, 1),q_delta_DOUBLE_down(10, 1),q_delta_DOUBLE(10,1),q_NULL(10,1);
 
@@ -229,27 +271,21 @@ JntArray SurRobotKinUR::invOneStep(Frame& frame_t_d, JntArray& q_origin, Vector&
     robot_fk_solver->JntToCart(q_origin, frame_7, 6);
     robot_fk_solver->JntToCart(q_origin, frame_8, 7);
     // pri.print_frame(frame_t);
-    // pri.print_frame(frame_9);
-    
+    // pri.print_frame(frame_8);
+    // pri.print_joints(q_origin);
     Vector p_delta_ii;
     p_delta_ii = frame_8.p - frame_7.p;
     // cout << "p_i-p_i+1: " << p_delta_ii.data[0] << " " << p_delta_ii.data[1] << " " << p_delta_ii.data[2] << endl;
     //获取 第8个关节 第九个关节 雅克比
-    jacSolver->JntToJac(q_origin, jac_7, 6);
+    int e=jacSolver->JntToJac(q_origin, jac_7, 6);
     jacSolver->JntToJac(q_origin, jac_8, 7);
     jacSolver->JntToJac(q_origin, jac_t);
-    
+
     //计算 RCM处 的雅可比矩阵
     jac_7_double = jac_7.data;
-    
     jac_8_double = jac_8.data;
-
-    
-
     j_RCM.block(0, 0, 3, 9) = (jac_7_double + lamda * (jac_8_double - jac_7_double)).block(0, 0, 3, 9);
     j_RCM.block(0, 9, 3, 1) << p_delta_ii.x(), p_delta_ii.y(), p_delta_ii.z();
-    // ROS_INFO("flag!");
-
     
     //计算总的雅可比矩阵
     j_FULL.block(0, 0, 6, 9) = jac_t.data;
@@ -257,7 +293,6 @@ JntArray SurRobotKinUR::invOneStep(Frame& frame_t_d, JntArray& q_origin, Vector&
     j_FULL.block(6, 0, 3, 10) = j_RCM;
 
     j_TIP = jac_t.data;
-
 
     
     //检测约束雅克比可操作性是否超出范围 over_flag将变为true，此时认为本次迭代失败
@@ -273,7 +308,7 @@ JntArray SurRobotKinUR::invOneStep(Frame& frame_t_d, JntArray& q_origin, Vector&
 
     // cout << "p_RCM: " << p_RCM.data[0] << " " << p_RCM.data[1] << " " << p_RCM.data[2] << endl;
     error_RCM << p_c(0) - p_RCM.data[0], p_c(1) - p_RCM.data[1], p_c(2) - p_RCM.data[2];
-
+    
     // cout << "error_RCM: " << error_RCM << endl;
 
     // pri.print_frame(frame_t);
@@ -317,7 +352,7 @@ JntArray SurRobotKinUR::invOneStep(Frame& frame_t_d, JntArray& q_origin, Vector&
     q_delta_DOUBLE = pseudoInverse(j_FULL) * error_FULL;
     
     limit_joint_5(q_origin, q_delta_DOUBLE, q_NULL);
-    
+
     
 
 
@@ -366,7 +401,7 @@ JntArray SurRobotKinUR::invOneStep(Frame& frame_t_d, JntArray& q_origin, Vector&
 ////////////////////////////////
 
 //计算reach可操作性和orient可操作性
-vector<double> SurRobotKinUR::get_jac_R_O() {
+void SurRobotKinUR::get_jac_R_O() {
     
     Eigen::MatrixXd ident(10, 10), jac_double_v(3, 10), jac_double_w(3, 10), jac_R(3, 10), jac_O(3, 10);
     ident.setIdentity();
@@ -384,8 +419,8 @@ vector<double> SurRobotKinUR::get_jac_R_O() {
     jac_O = jac_double_w * (ident - pseudoInverse(jac_double_v) * jac_double_v) * (ident - pseudoInverse_RCM(j_RCM) * j_RCM);
     // cout << (jac_R * jac_R.transpose()).inverse() << endl;
     //计算可操作性系数
-    double k_r = sqrt((jac_R * jac_R.transpose()).trace() * (jac_R * jac_R.transpose()).inverse().trace());
-    double k_o = sqrt((jac_O * jac_O.transpose()).trace() * (jac_O * jac_O.transpose()).inverse().trace());
+    k_r = sqrt((jac_R * jac_R.transpose()).trace() * (jac_R * jac_R.transpose()).inverse().trace());
+    k_o = sqrt((jac_O * jac_O.transpose()).trace() * (jac_O * jac_O.transpose()).inverse().trace());
 
     // cout << "k_r: " << 1 / k_r << " k_o: " << 1 / k_o << endl;
     
