@@ -62,7 +62,6 @@ public:
 ////////////////////////////////
 SurRobotKinUR::SurRobotKinUR() {
     m_R = new SurgicalRobotUR();
-
     robot_chain = m_R->ur10e_chain;
 
     jacSolver=new ChainJntToJacSolver(robot_chain);
@@ -103,8 +102,6 @@ void SurRobotKinUR::inverse_kin(Frame& frame_in, JntArray& q_in, Vector& p_c) {
 
     get_jac_R_O();
 
-
-    
 }
 
 //速度转化为矩阵
@@ -390,7 +387,6 @@ vector<double> SurRobotKinUR::get_jac_R_O() {
     double k_r = sqrt((jac_R * jac_R.transpose()).trace() * (jac_R * jac_R.transpose()).inverse().trace());
     double k_o = sqrt((jac_O * jac_O.transpose()).trace() * (jac_O * jac_O.transpose()).inverse().trace());
 
-    vector<double> answer = { k_r,k_o };
     // cout << "k_r: " << 1 / k_r << " k_o: " << 1 / k_o << endl;
     
     // cout << "------------------------" << endl;
