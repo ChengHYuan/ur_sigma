@@ -240,6 +240,6 @@ target_link_libraries(position_rcm_control_sim ${kdl_parser_LIBRARIES} ${orocos_
 # target_link_libraries(joint_pub_action_server_test ${catkin_LIBRARIES} )
 # target_link_libraries(joint_spline_pub ${catkin_LIBRARIES} )
 target_link_libraries(m_ga ${catkin_LIBRARIES} ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES})
-target_link_libraries(with_violent ${catkin_LIBRARIES} ${kdl_parser_LIBRARIES} ${orocos_kdl_LIBRARIES})
+target_link_libraries(with_violent ${catkin_LIBRARIES})
 
 
